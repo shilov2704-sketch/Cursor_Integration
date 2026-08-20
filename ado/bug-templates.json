@@ -1,0 +1,43 @@
+{
+  "organization": "melston",
+  "project": "HubEx",
+  "workItemType": "Bug",
+  "teamId": "3747dce0-719e-4b38-a73f-59a06f95c470",
+  "note": "ADO MCP cannot apply templateId. Recreate template fields via wit_create_work_item. Use System.Tags instead of System.Tags-Add. Skip empty AssignedTo.",
+  "reproStepsHtmlTemplate": "<p><b>Тенант:</b> <i>{tenant}</i></p> <p><b>Пользователь:</b> <i>{users}</i></p> <p><b>Страница/форма:</b> <i>{page}</i></p> <br> <p><b>Действия:</b></p> <p><i>{steps}</i></p> <br> <p><b>Результат:</b></p> <p><i>{actual}</i></p>",
+  "templates": {
+    "web": {
+      "name": "Баг на WEB-приложение [DEV]",
+      "templateId": "557eb1e4-3e29-420b-9506-e979f57756fa",
+      "url": "https://melston.visualstudio.com/HubEx/_workitems/create/Bug?templateId=557eb1e4-3e29-420b-9506-e979f57756fa&ownerId=3747dce0-719e-4b38-a73f-59a06f95c470",
+      "aliases": ["web", "WEB", "веб", "webapp", "frontend web"],
+      "fields": {
+        "System.AreaPath": "HubEx\\Frontend\\WebApp",
+        "System.IterationPath": "HubEx\\Next-Backlog",
+        "System.Tags": "DEV"
+      }
+    },
+    "backend": {
+      "name": "Баг на backend [DEV]",
+      "templateId": "1eb24c0d-7d4d-4b97-a13d-ef469c7127a2",
+      "url": "https://melston.visualstudio.com/HubEx/_workitems/create/Bug?templateId=1eb24c0d-7d4d-4b97-a13d-ef469c7127a2&ownerId=3747dce0-719e-4b38-a73f-59a06f95c470",
+      "aliases": ["backend", "api", "сервер", "be"],
+      "fields": {
+        "System.AreaPath": "HubEx\\Backend",
+        "System.IterationPath": "HubEx\\Next-Backlog",
+        "System.Tags": "DEV"
+      }
+    },
+    "mobile": {
+      "name": "Баг на МП [STG]",
+      "templateId": "c0e0c23a-f7d6-4f57-83b7-445aba3a5d40",
+      "url": "https://melston.visualstudio.com/HubEx/_workitems/create/Bug?templateId=c0e0c23a-f7d6-4f57-83b7-445aba3a5d40&ownerId=3747dce0-719e-4b38-a73f-59a06f95c470",
+      "aliases": ["mobile", "МП", "мобильное", "worker app", "приложение"],
+      "fields": {
+        "System.AreaPath": "HubEx\\Frontend\\WorkerApp",
+        "System.IterationPath": "HubEx\\Next-Backlog",
+        "System.Tags": "DEV"
+      }
+    }
+  }
+}

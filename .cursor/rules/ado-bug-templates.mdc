@@ -1,0 +1,44 @@
+---
+description: Создание Bug в Azure DevOps HubEx по шаблонам WEB / Backend / Mobile
+alwaysApply: true
+---
+
+# Azure DevOps Bug templates (HubEx)
+
+Создавай баги через MCP `user-ado` / `wit_create_work_item`. У ADO MCP нет `templateId` — копируй поля шаблона.
+
+- Organization: `melston`
+- Project: `HubEx`
+- Type: `Bug`
+- Не создавай баг без подтверждения пользователя, если он не сказал «создай».
+- После создания верни ID и URL: `https://melston.visualstudio.com/HubEx/_workitems/edit/{id}`
+
+## Выбор шаблона
+
+| Запрос | Шаблон | Area Path | Tags |
+|---|---|---|---|
+| WEB, веб, webapp | Баг на WEB-приложение [DEV] | `HubEx\\Frontend\\WebApp` | DEV |
+| Backend, API, сервер | Баг на backend [DEV] | `HubEx\\Backend` | DEV |
+| Mobile, МП, приложение | Баг на МП [STG] | `HubEx\\Frontend\\WorkerApp` | DEV |
+
+Все три: `System.IterationPath` = `HubEx\\Next-Backlog`. `System.AssignedTo` не ставь.
+
+Поля `wit_create_work_item`: `System.Title`, `System.AreaPath`, `System.IterationPath`, `System.Tags` (не `System.Tags-Add`), `Microsoft.VSTS.TCM.ReproSteps` с `format: Html`.
+
+## ReproSteps HTML
+
+Заполни плейсхолдеры из контекста (тред Teams, описание). Не оставляй квадратные скобки, если данные есть.
+
+```html
+<p><b>Тенант:</b> <i>{tenant}</i></p>
+<p><b>Пользователь:</b> <i>{users}</i></p>
+<p><b>Страница/форма:</b> <i>{page}</i></p>
+<br>
+<p><b>Действия:</b></p>
+<p><i>{steps}</i></p>
+<br>
+<p><b>Результат:</b></p>
+<p><i>{actual}</i></p>
+```
+
+Источник полей: `ado/bug-templates.json`.
