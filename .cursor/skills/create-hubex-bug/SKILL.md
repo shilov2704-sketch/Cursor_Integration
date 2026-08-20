@@ -7,6 +7,8 @@ description: Создать Bug в Azure DevOps HubEx из Teams или Cloud Ag
 
 Сначала вызови MCP `wit_create_work_item` (сервер `ado` / `user-ado`), если инструмент есть в этом прогоне. Шаблоны: `ado/bug-templates.json`.
 
+Из Teams / Cloud Agent создавай баг сразу, в этом же прогоне. Не проси открыть Web или Desktop и не задавай вопросов, без ответа на которые баг не появится. `@Cursor` в треде про дефект = просьба создать. Платформу определи по треду (МП → mobile, API/ручка → backend, веб/страница/неясно → web).
+
 ## Обязательные поля
 
 - `System.Title`
