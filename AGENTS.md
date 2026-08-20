@@ -6,6 +6,10 @@
 - Код, имена файлов, идентификаторы, команды git, заголовки коммитов и PR — на английском, если в проекте нет другой договорённости.
 - Не переключайся на английский только потому, что интерфейс Teams или Cursor на английском.
 
+# Azure DevOps MCP
+
+Сервер `ado` описан в `.cursor/mcp.json`. Токен **не хранится в git**. Cursor читает `AZURE_DEVOPS_PAT` из окружения (`${env:AZURE_DEVOPS_PAT}`). Тот же секрет лежит в GitHub Actions Secrets репозитория как `AZURE_DEVOPS_PAT`. Для Cloud Agents в Teams добавьте одноимённый секрет в [Cursor Cloud Agents](https://cursor.com/dashboard/cloud-agents).
+
 # Баги в Azure DevOps
 
 Проект HubEx (org `melston`). Создавай work item типа `Bug` через MCP Azure DevOps: `wit_create_work_item`.
