@@ -3,9 +3,9 @@
   "project": "HubEx",
   "workItemType": "Bug",
   "teamId": "3747dce0-719e-4b38-a73f-59a06f95c470",
-  "note": "ADO MCP cannot apply templateId. Recreate template fields via wit_create_work_item. Use System.Tags instead of System.Tags-Add. Always set System.AssignedTo to empty after create (process assigns the PAT owner). Tags must include DEV, client name from the thread, and Create Cursor agent. Attach thread files via scripts/create-hubex-bug.mjs --attach-to.",
+  "note": "ADO MCP cannot apply templateId. Recreate template fields via wit_create_work_item. Use System.Tags instead of System.Tags-Add. Always set System.AssignedTo to empty after create (process assigns the PAT owner). Tags must include DEV, client name from the thread, and Create Cursor agent. Teams thread URL goes after Страница/форма and before Действия. Attach thread files via scripts/create-hubex-bug.mjs --attach-to --thread-url.",
   "fixedTags": ["DEV", "Create Cursor agent"],
-  "reproStepsHtmlTemplate": "<p><b>Тенант:</b> <i>{tenant}</i></p> <p><b>Пользователь:</b> <i>{users}</i></p> <p><b>Страница/форма:</b> <i>{page}</i></p> <br> <p><b>Действия:</b></p> <p><i>{steps}</i></p> <br> <p><b>Фактический результат:</b></p> <p><i>{actual}</i></p> <br> <p><b>Ожидаемый результат:</b></p> <p><i>{expected}</i></p>",
+  "reproStepsHtmlTemplate": "<p><b>Тенант:</b> <i>{tenant}</i></p> <p><b>Пользователь:</b> <i>{users}</i></p> <p><b>Страница/форма:</b> <i>{page}</i></p> <p><b>Тред Teams:</b> {thread}</p> <br> <p><b>Действия:</b></p> <p><i>{steps}</i></p> <br> <p><b>Фактический результат:</b></p> <p><i>{actual}</i></p> <br> <p><b>Ожидаемый результат:</b></p> <p><i>{expected}</i></p>{images}",
   "templates": {
     "web": {
       "name": "Баг на WEB-приложение [DEV]",

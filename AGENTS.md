@@ -17,7 +17,7 @@
 Если MCP-инструмента нет, создавай Bug сразу скриптом. Секрет `AZURE_DEVOPS_PAT` задаётся в Cursor Cloud Agents → Secrets и доступен как переменная окружения:
 
 ```bash
-node scripts/create-hubex-bug.mjs --template web --title "Краткий заголовок" --tenant "Frigoglass" --users "..." --page "..." --steps "..." --result "..." --expected "..." --attach screenshot.png
+node scripts/create-hubex-bug.mjs --template web --title "Краткий заголовок" --thread-url "https://teams.microsoft.com/l/message/..." --tenant "Frigoglass" --users "..." --page "..." --steps "..." --result "..." --expected "..." --attach screenshot.png
 ```
 
 - `--template`: `web` | `backend` | `mobile`
@@ -53,14 +53,28 @@ MCP не принимает `templateId`. Воспроизводи шаблон 
 
 Поле Assign / `System.AssignedTo` оставляй пустым. На создании передай пустую строку. Сразу после создания вызови `wit_update_work_item` с `/fields/System.AssignedTo` = `""`: процесс ADO иначе назначает владельца PAT.
 
+## Ссылка на тред Teams
+
+В Repro Steps ссылка на тред — **сразу после «Страница/форма» и перед «Действия»**:
+
+```html
+<p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>
+```
+
+`{url}` — `https://teams.microsoft.com/...` из сообщения/треда или deep link из `conversationId` / `messageId` / `tenantId` / `teamId`. Не выдумывай URL. Если ссылки нет — `не указан` и попроси Copy link. Передай URL в скрипт `--thread-url` (добавит Hyperlink на work item).
+
 ## Вложения
 
-Перенеси в баг все фото, видео и другие файлы из треда. У ADO MCP нет загрузки вложений — после создания:
+Перенеси в баг все фото, видео и другие файлы из треда. У ADO MCP нет загрузки вложений. **Не заканчивай прогон**, пока не выполнен скрипт ниже (даже если файлов не нашлось — он допишет ссылку на тред).
 
-1. Скопируй файлы из чата/треда в `tmp/bug-attachments/`
-2. Выполни `node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/bug-attachments`
+1. Найди бинарники (пути в промпте, `find` по `/tmp`, `~/.cursor/attachments`, `/opt/cursor/attachments`) и скопируй в `tmp/bug-attachments/`
+2. Выполни:
 
-Если файла нет на диске (агент видит картинку, но бинарник недоступен) — напиши об этом и попроси приложить файл в чат, затем догрузи тем же скриптом.
+```bash
+node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/bug-attachments --thread-url "{url}"
+```
+
+Если файла нет на диске (агент видит картинку, но бинарник недоступен) — баг создай, напиши какие вложения не перенеслись и попроси приложить файл, затем догрузи тем же скриптом.
 
 Обязательные поля при создании:
 
@@ -77,6 +91,7 @@ MCP не принимает `templateId`. Воспроизводи шаблон 
 <p><b>Тенант:</b> <i>…</i></p>
 <p><b>Пользователь:</b> <i>…</i></p>
 <p><b>Страница/форма:</b> <i>…</i></p>
+<p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>
 <br>
 <p><b>Действия:</b></p>
 <p><i>…</i></p>

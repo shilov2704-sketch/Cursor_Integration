@@ -39,15 +39,25 @@ alwaysApply: true
 
 Поля `wit_create_work_item`: `System.Title`, `System.AreaPath`, `System.IterationPath`, `System.Tags`, `System.AssignedTo` (пусто), `Microsoft.VSTS.TCM.ReproSteps` с `format: Html`.
 
-## Вложения из треда
+## Ссылка на тред Teams
 
-Перенеси в созданный баг все фото, видео и другие файлы из треда. MCP не загружает вложения — используй скрипт:
+Ссылка на тред — сразу после «Страница/форма» и перед «Действия»:
 
-```bash
-node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/bug-attachments
+```html
+<p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>
 ```
 
-Сначала скопируй файлы из чата/треда в `tmp/bug-attachments/` (или передай `--attach` с путями). Если файла нет на диске — попроси пользователя приложить его в чат и догрузи.
+Бери `https://teams.microsoft.com/...` из сообщения или собери deep link из id треда/сообщения. Не выдумывай URL. Нет ссылки — `не указан`. Обязательно передай `--thread-url` в скрипт после создания.
+
+## Вложения из треда
+
+Перенеси в созданный баг все фото, видео и другие файлы из треда. MCP не загружает вложения. **Не завершай прогон без этого скрипта:**
+
+```bash
+node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/bug-attachments --thread-url "{url}"
+```
+
+Сначала найди бинарники (промпт, `/tmp`, `~/.cursor/attachments`) и скопируй в `tmp/bug-attachments/`. Если файла нет на диске — создай баг, напиши что не перенеслось, попроси приложить файл и догрузи.
 
 ## ReproSteps HTML
 
@@ -57,6 +67,7 @@ node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/b
 <p><b>Тенант:</b> <i>{tenant}</i></p>
 <p><b>Пользователь:</b> <i>{users}</i></p>
 <p><b>Страница/форма:</b> <i>{page}</i></p>
+<p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>
 <br>
 <p><b>Действия:</b></p>
 <p><i>{steps}</i></p>
