@@ -1,0 +1,30 @@
+{
+  "organization": "melston",
+  "project": "HubEx",
+  "webUrlBase": "https://dev.azure.com/melston/HubEx/_git",
+  "note": "Pick repos from the Teams thread (page, API path, WEB vs МП vs backend). Then search_code and repo_get_file_content. Do not clone this Cursor_Integration repo for HubEx product code.",
+  "platforms": {
+    "web": {
+      "primary": ["HubEx.Frontend.MainApp"],
+      "also": ["HubEx.Frontend.DS", "HubEx.Frontend.AdminApp", "HubEx.HttpClient.JS", "HubEx.BFF"]
+    },
+    "mobile": {
+      "primary": ["HubEx.Frontend.RN.Worker"],
+      "also": ["HubEx.HttpClient.JS", "HubEx.BFF"]
+    },
+    "backend": {
+      "primary": ["HubEx.Service.WORK.Api"],
+      "byKeyword": {
+        "заявк|QR|task|work type|вид работ": ["HubEx.Service.WORK.Api", "HubEx.WORK.Task"],
+        "объект|asset|компани|ES": ["HubEx.Service.ES.Api"],
+        "пользовател|роль|тенант|ADM": ["HubEx.Service.ADM.Api"],
+        "auth|логин|токен": ["HubEx.Service.AUTH.Api", "HubEx.Service.AUTHN.Api", "HubEx.Service.AUTHZ.Api"],
+        "импорт": ["HubEx.Service.IMPORT.Api"],
+        "экспорт": ["HubEx.Service.EXPORT.Api"],
+        "уведомлен|email|sms|MSG": ["HubEx.Service.MSG.Api", "HubEx.MSG.Notification"],
+        "файл|вложен|attachment": ["HubEx.FS.Attachment.Api"],
+        "BFF|gateway": ["HubEx.BFF", "HubEx.ApiGateway"]
+      }
+    }
+  }
+}
