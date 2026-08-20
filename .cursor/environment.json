@@ -1,0 +1,3 @@
+{
+  "install": "node -v && test -f scripts/create-hubex-bug.mjs"
+}
