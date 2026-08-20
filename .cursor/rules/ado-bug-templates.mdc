@@ -19,15 +19,33 @@ alwaysApply: true
 
 ## Выбор шаблона
 
-| Запрос | Шаблон | Area Path | Tags |
-|---|---|---|---|
-| WEB, веб, webapp | Баг на WEB-приложение [DEV] | `HubEx\\Frontend\\WebApp` | DEV |
-| Backend, API, сервер | Баг на backend [DEV] | `HubEx\\Backend` | DEV |
-| Mobile, МП, приложение | Баг на МП [STG] | `HubEx\\Frontend\\WorkerApp` | DEV |
+| Запрос | Шаблон | Area Path |
+|---|---|---|
+| WEB, веб, webapp | Баг на WEB-приложение [DEV] | `HubEx\\Frontend\\WebApp` |
+| Backend, API, сервер | Баг на backend [DEV] | `HubEx\\Backend` |
+| Mobile, МП, приложение | Баг на МП [STG] | `HubEx\\Frontend\\WorkerApp` |
 
-Все три: `System.IterationPath` = `HubEx\\Next-Backlog`. `System.AssignedTo` не ставь.
+Все три: `System.IterationPath` = `HubEx\\Next-Backlog`.
 
-Поля `wit_create_work_item`: `System.Title`, `System.AreaPath`, `System.IterationPath`, `System.Tags` (не `System.Tags-Add`), `Microsoft.VSTS.TCM.ReproSteps` с `format: Html`.
+## Теги и Assign
+
+`System.Tags` всегда: `DEV; {имя клиента из треда}; Create Cursor agent`.
+
+Имя клиента — тенант/клиент из треда Teams (например `Frigoglass`). Если не удалось определить — `DEV; Create Cursor agent`. Не используй `System.Tags-Add`.
+
+`System.AssignedTo` не заполняй. После создания сразу `wit_update_work_item`: `/fields/System.AssignedTo` = `""` (иначе ADO назначит владельца PAT).
+
+Поля `wit_create_work_item`: `System.Title`, `System.AreaPath`, `System.IterationPath`, `System.Tags`, `System.AssignedTo` (пусто), `Microsoft.VSTS.TCM.ReproSteps` с `format: Html`.
+
+## Вложения из треда
+
+Перенеси в созданный баг все фото, видео и другие файлы из треда. MCP не загружает вложения — используй скрипт:
+
+```bash
+node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/bug-attachments
+```
+
+Сначала скопируй файлы из чата/треда в `tmp/bug-attachments/` (или передай `--attach` с путями). Если файла нет на диске — попроси пользователя приложить его в чат и догрузи.
 
 ## ReproSteps HTML
 
@@ -41,8 +59,13 @@ alwaysApply: true
 <p><b>Действия:</b></p>
 <p><i>{steps}</i></p>
 <br>
-<p><b>Результат:</b></p>
+<p><b>Фактический результат:</b></p>
 <p><i>{actual}</i></p>
+<br>
+<p><b>Ожидаемый результат:</b></p>
+<p><i>{expected}</i></p>
 ```
+
+Не объединяй в один «Результат». Если ожидаемое в треде не сказано явно — сформулируй по смыслу бага.
 
 Источник полей: `ado/bug-templates.json`.

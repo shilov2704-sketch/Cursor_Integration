@@ -15,7 +15,7 @@
 Если MCP-инструмента нет, создавай Bug сразу скриптом. Секрет `AZURE_DEVOPS_PAT` задаётся в Cursor Cloud Agents → Secrets и доступен как переменная окружения:
 
 ```bash
-node scripts/create-hubex-bug.mjs --template web --title "Краткий заголовок" --tenant "..." --users "..." --page "..." --steps "..." --result "..."
+node scripts/create-hubex-bug.mjs --template web --title "Краткий заголовок" --tenant "Frigoglass" --users "..." --page "..." --steps "..." --result "..." --expected "..." --attach screenshot.png
 ```
 
 - `--template`: `web` | `backend` | `mobile`
@@ -30,20 +30,42 @@ node scripts/create-hubex-bug.mjs --template web --title "Краткий заг�
 
 MCP не принимает `templateId`. Воспроизводи шаблон полями из `ado/bug-templates.json`.
 
-| Платформа | Шаблон в ADO | Area Path | Tag |
-|---|---|---|---|
-| WEB | Баг на WEB-приложение [DEV] | HubEx\\Frontend\\WebApp | DEV |
-| Backend | Баг на backend [DEV] | HubEx\\Backend | DEV |
-| Мобильное приложение | Баг на МП [STG] | HubEx\\Frontend\\WorkerApp | DEV |
+| Платформа | Шаблон в ADO | Area Path |
+|---|---|---|
+| WEB | Баг на WEB-приложение [DEV] | HubEx\\Frontend\\WebApp |
+| Backend | Баг на backend [DEV] | HubEx\\Backend |
+| Мобильное приложение | Баг на МП [STG] | HubEx\\Frontend\\WorkerApp |
 
-Общее: `System.IterationPath` = `HubEx\\Next-Backlog`. Assigned To не заполняй.
+Общее: `System.IterationPath` = `HubEx\\Next-Backlog`.
+
+## Теги
+
+`System.Tags` (не `System.Tags-Add`) всегда:
+
+`DEV; {имя клиента из треда}; Create Cursor agent`
+
+Имя клиента бери из треда Teams: тенант, клиент, канал. Пример: `DEV; Frigoglass; Create Cursor agent`. Если клиента нет — `DEV; Create Cursor agent`.
+
+## Assign
+
+Поле Assign / `System.AssignedTo` оставляй пустым. На создании передай пустую строку. Сразу после создания вызови `wit_update_work_item` с `/fields/System.AssignedTo` = `""`: процесс ADO иначе назначает владельца PAT.
+
+## Вложения
+
+Перенеси в баг все фото, видео и другие файлы из треда. У ADO MCP нет загрузки вложений — после создания:
+
+1. Скопируй файлы из чата/треда в `tmp/bug-attachments/`
+2. Выполни `node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/bug-attachments`
+
+Если файла нет на диске (агент видит картинку, но бинарник недоступен) — напиши об этом и попроси приложить файл в чат, затем догрузи тем же скриптом.
 
 Обязательные поля при создании:
 
 - `System.Title`
 - `System.AreaPath`
 - `System.IterationPath`
-- `System.Tags` (значение `DEV`; не использовать `System.Tags-Add`)
+- `System.Tags`
+- `System.AssignedTo` (пусто)
 - `Microsoft.VSTS.TCM.ReproSteps` в HTML (`format: Html`)
 
 Структура Repro Steps:
@@ -56,8 +78,13 @@ MCP не принимает `templateId`. Воспроизводи шаблон 
 <p><b>Действия:</b></p>
 <p><i>…</i></p>
 <br>
-<p><b>Результат:</b></p>
+<p><b>Фактический результат:</b></p>
+<p><i>…</i></p>
+<br>
+<p><b>Ожидаемый результат:</b></p>
 <p><i>…</i></p>
 ```
+
+Не пиши один блок «Результат». Всегда разделяй: что произошло и как должно быть. Если ожидаемое в треде не сказано явно — сформулируй по смыслу бага.
 
 Если пользователь не уточнил платформу — спроси: WEB, Backend или МП. Не создавай баг без явной просьбы создать. После создания отдай ID и ссылку `https://melston.visualstudio.com/HubEx/_workitems/edit/{id}`.
