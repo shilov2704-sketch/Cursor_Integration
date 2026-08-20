@@ -8,7 +8,24 @@
 
 # Azure DevOps MCP
 
-Сервер `ado` описан в `.cursor/mcp.json`. Токен **не хранится в git**. Cursor читает `AZURE_DEVOPS_PAT` из окружения (`${env:AZURE_DEVOPS_PAT}`). Тот же секрет лежит в GitHub Actions Secrets репозитория как `AZURE_DEVOPS_PAT`. Для Cloud Agents в Teams добавьте одноимённый секрет в [Cursor Cloud Agents](https://cursor.com/dashboard/cloud-agents).
+## Локальный Agent (Cursor Desktop)
+
+Сервер `ado` в `.cursor/mcp.json` работает только на компьютере пользователя. Создавай Bug через `wit_create_work_item`.
+
+## Cloud Agent / Teams (`@Cursor`)
+
+Локальный MCP и GitHub Secrets туда **не попадают**. `https://mcp.dev.azure.com/melston` в Cursor не использовать: у Cursor нет Entra OAuth для remote ADO MCP.
+
+Нужен секрет **Cursor Cloud Agents** с именем `AZURE_DEVOPS_PAT`:
+https://cursor.com/dashboard/cloud-agents
+
+Если MCP-инструментов нет, создавай баг скриптом из репозитория:
+
+```bash
+node scripts/create-hubex-bug.mjs --template web --title "..." --tenant "..." --users "..." --page "..." --steps "..." --result "..."
+```
+
+`--template`: `web` | `backend` | `mobile`.
 
 # Баги в Azure DevOps
 
