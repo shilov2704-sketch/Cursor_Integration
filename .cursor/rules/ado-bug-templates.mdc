@@ -5,8 +5,9 @@ alwaysApply: true
 
 # Azure DevOps Bug templates (HubEx)
 
-Локально (Desktop Agent): MCP `wit_create_work_item`.
-Cloud / Teams: **всегда** `node scripts/create-hubex-bug.mjs`. Не ждать MCP. Секрет `AZURE_DEVOPS_PAT` уже в Cloud Agents.
+Создавай Bug через MCP `wit_create_work_item`, если инструмент доступен (Desktop и Cloud / Teams).
+
+Если MCP нет — `node scripts/create-hubex-bug.mjs`. Токен: `AZURE_DEVOPS_PAT` (Cloud Agents → Secrets). Не ждать Desktop Agent.
 
 У ADO MCP нет `templateId` — копируй поля шаблона.
 

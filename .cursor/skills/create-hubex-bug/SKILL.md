@@ -5,9 +5,11 @@ description: Создать Bug в Azure DevOps HubEx из Teams или Cloud Ag
 
 # Создать Bug HubEx
 
-В Cloud Agent и Microsoft Teams нет Azure DevOps MCP. Не пытайся вызывать `wit_create_work_item`.
+Сначала вызови MCP `wit_create_work_item` (сервер `ado` / `user-ado`), если инструмент есть в этом прогоне.
 
-Сразу выполни:
+Поля: `System.Title`, `System.AreaPath`, `System.IterationPath`, `System.Tags` = `DEV`, `Microsoft.VSTS.TCM.ReproSteps` (`format: Html`). Шаблоны: `ado/bug-templates.json`.
+
+Если MCP недоступен, сразу выполни:
 
 ```bash
 node scripts/create-hubex-bug.mjs --template web --title "..." --tenant "..." --users "..." --page "..." --steps "..." --result "..."

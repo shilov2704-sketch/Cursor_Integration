@@ -1,3 +1,4 @@
 {
-  "install": "node -v && test -f scripts/create-hubex-bug.mjs"
+  "name": "HubEx Teams",
+  "install": "node -v && npm install -g @azure-devops/mcp && test -f scripts/create-hubex-bug.mjs"
 }

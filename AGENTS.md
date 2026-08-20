@@ -8,15 +8,11 @@
 
 # Azure DevOps MCP
 
-## Cursor Desktop (локальный Agent)
+Создавай Bug через MCP `wit_create_work_item` (сервер `ado` / `user-ado`), если инструмент доступен — и в Desktop, и в Cloud Agent / Teams.
 
-Создавай Bug через MCP `wit_create_work_item`.
+Не проси подключить remote HTTP `mcp.dev.azure.com`: в Cursor он не логинится через Entra ID. Нужен stdio-сервер `@azure-devops/mcp` с PAT.
 
-## Обязательно для Cloud Agent и Microsoft Teams
-
-Этот прогон **не имеет** Azure DevOps MCP. Не пиши про MCP, не проси подключить `mcp.dev.azure.com`, не ссылайся на GitHub Secrets.
-
-Секрет `AZURE_DEVOPS_PAT` уже задан в Cursor Cloud Agents и доступен процессу как переменная окружения. Создавай Bug **только** командой:
+Если MCP-инструмента нет, создавай Bug сразу скриптом. Секрет `AZURE_DEVOPS_PAT` задаётся в Cursor Cloud Agents → Secrets и доступен как переменная окружения:
 
 ```bash
 node scripts/create-hubex-bug.mjs --template web --title "Краткий заголовок" --tenant "..." --users "..." --page "..." --steps "..." --result "..."
@@ -25,7 +21,7 @@ node scripts/create-hubex-bug.mjs --template web --title "Краткий заг�
 - `--template`: `web` | `backend` | `mobile`
 - Не печатай и не логируй значение токена
 - Если скрипт вернул `id` и `url` — баг создан, отдай ссылку пользователю
-- Если ошибка `AZURE_DEVOPS_PAT is missing` — секрет не попал в этот run; нужен новый агент после проверки имени секрета
+- Если ошибка `AZURE_DEVOPS_PAT is missing` — секрет не попал в этот run
 - Если пользователь просит создать баг — создавай сразу, не предлагай Desktop Agent как единственный путь
 
 # Баги в Azure DevOps
