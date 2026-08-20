@@ -68,15 +68,9 @@
 
 ## Шаг 5. MCP Azure DevOps
 
-MCP задаётся **у вас в Cursor**, не берётся из репозитория.
+Настройки MCP для облачного агента: [cursor.com/agents](https://cursor.com/agents) → **MCP** → **Add MCP** (или **+ Add MCP**).
 
-В чате Cursor:
-
-1. Нажмите **+** слева внизу поля ввода.
-2. **MCP Servers**.
-3. **+ Add MCP**.
-
-<img src="./add-mcp.png" alt="Плюс → MCP Servers → Add MCP" />
+MCP задаётся в **вашем** аккаунте Cursor, не берётся из репозитория. Не Settings Desktop и не HTTP `mcp.dev.azure.com`.
 
 В форме заполните поля (JSON вставлять нельзя):
 
