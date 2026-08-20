@@ -10,7 +10,9 @@
 
 Создавай Bug через MCP `wit_create_work_item` (сервер `ado` / `user-ado`), если инструмент доступен — и в Desktop, и в Cloud Agent / Teams.
 
-Не проси подключить remote HTTP `mcp.dev.azure.com`: в Cursor он не логинится через Entra ID. Нужен stdio-сервер `@azure-devops/mcp` с PAT.
+Не проси подключить remote HTTP `mcp.dev.azure.com`: в Cursor он не логинится через Entra ID. Нужен stdio-сервер `@azure-devops/mcp` с **PAT текущего пользователя**.
+
+Токен **нельзя** брать из репозитория (`.env`, `.cursor/mcp.json`, git). Только секрет Cursor Cloud Agents / переменная окружения этого прогона, которую задал сам пользователь. Если `AZURE_DEVOPS_PAT` пуст — не подставляй чужой ключ и не ищи его в файлах проекта.
 
 Если MCP-инструмента нет, создавай Bug сразу скриптом. Секрет `AZURE_DEVOPS_PAT` задаётся в Cursor Cloud Agents → Secrets и доступен как переменная окружения:
 
