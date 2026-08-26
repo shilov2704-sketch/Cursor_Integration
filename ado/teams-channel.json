@@ -1,0 +1,8 @@
+{
+  "note": "Default HubEx Support channel for Teams deep links when a message id is known but the full URL is missing. Prefer a URL from the prompt over these defaults.",
+  "tenantId": "ce127e84-9fca-4dde-a9ba-055578ef3935",
+  "groupId": "dd604c56-490a-4338-801a-ea248dd49d42",
+  "conversationId": "19:915bb733414546c0979a970c0bd7090a@thread.tacv2",
+  "teamName": "HubEx",
+  "channelName": "Support"
+}

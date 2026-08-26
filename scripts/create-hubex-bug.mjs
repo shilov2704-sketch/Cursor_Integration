@@ -6,8 +6,10 @@
  * Create:
  *   node scripts/create-hubex-bug.mjs --template web --title "..." --tenant "Frigoglass" --thread-url "https://teams.microsoft.com/l/message/..." --users "..." --page "..." --steps "..." --result "..." --expected "..." --discover --attach screenshot.png
  *
- * After MCP create:
+ * After MCP create (attachments only — do not use this script to create the work item):
  *   node scripts/create-hubex-bug.mjs --attach-to 32727 --unassign --discover --attach-dir tmp/bug-attachments --thread-url "https://teams.microsoft.com/l/message/..."
+ *
+ * On edit, skip --discover. Existing filenames are not attached again unless --force-attach.
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -168,9 +170,7 @@ function discoverDirs() {
 
 function shouldDiscover() {
   if (process.argv.includes("--no-discover")) return false;
-  if (process.argv.includes("--discover")) return true;
-  if (process.argv.includes("--attach-to")) return true;
-  return process.argv.includes("--list-discovered");
+  return process.argv.includes("--discover") || process.argv.includes("--list-discovered");
 }
 
 function collectAttachments() {
@@ -315,8 +315,33 @@ async function linkThread(id, threadUrl, pat) {
 }
 
 async function getWorkItem(id, pat) {
-  const url = `https://dev.azure.com/${config.organization}/${config.project}/_apis/wit/workitems/${id}?api-version=${API}`;
+  const url =
+    `https://dev.azure.com/${config.organization}/${config.project}` +
+    `/_apis/wit/workitems/${id}?$expand=relations&api-version=${API}`;
   return adoJson(url, { method: "GET", pat });
+}
+
+function existingAttachmentNames(workItem) {
+  const names = new Set();
+  for (const rel of workItem.relations || []) {
+    if (rel.rel === "AttachedFile" && rel.attributes?.name) {
+      names.add(String(rel.attributes.name).toLowerCase());
+    }
+  }
+  return names;
+}
+
+function hasHyperlink(workItem, threadUrl) {
+  const want = String(threadUrl || "").trim().replaceAll("&amp;", "&");
+  if (!want) return false;
+  return (workItem.relations || []).some(
+    (rel) => rel.rel === "Hyperlink" && String(rel.url || "").replaceAll("&amp;", "&") === want
+  );
+}
+
+function skipExistingFiles(files, workItem) {
+  const existing = existingAttachmentNames(workItem);
+  return files.filter((filePath) => !existing.has(path.basename(filePath).toLowerCase()));
 }
 
 async function patchReproSteps(id, htmlValue, pat) {
@@ -345,7 +370,10 @@ function withThreadAndImages(repro, threadUrl, uploaded) {
   const threadLine = `<p><b>Тред Teams:</b> ${threadMarkup(threadUrl)}</p>`;
   const existingThread = /<p><b>Тред Teams:<\/b>[\s\S]*?<\/p>/i;
   if (existingThread.test(next)) {
-    if (threadUrl && /Тред Teams:.*не указан/i.test(next)) {
+    const empty =
+      /Тред Teams:.*не указан/i.test(next) ||
+      /<p><b>Тред Teams:<\/b>\s*(?:<i>\s*<\/i>)?\s*<\/p>/i.test(next);
+    if (threadUrl && empty) {
       next = next.replace(existingThread, threadLine);
     }
   } else {
@@ -363,25 +391,48 @@ if (process.argv.includes("--list-discovered")) {
 }
 
 const pat = resolvePat(process.env.AZURE_DEVOPS_PAT || process.env.PERSONAL_ACCESS_TOKEN);
-const attachments = collectAttachments();
-const uploaded = await uploadFiles(attachments, pat);
 const attachTo = arg("attach-to");
 const threadUrl = arg("thread-url") || arg("thread") || process.env.TEAMS_THREAD_URL || "";
+const forceAttach = process.argv.includes("--force-attach");
+let attachments = collectAttachments();
 
 if (attachTo) {
   const id = Number(attachTo);
   if (!Number.isInteger(id) || id < 1) throw new Error("--attach-to must be a work item id");
+  const current = await getWorkItem(id, pat);
+  if (!forceAttach) {
+    attachments = skipExistingFiles(attachments, current);
+  }
+  const uploaded = await uploadFiles(attachments, pat);
   if (process.argv.includes("--unassign")) {
     await unassignWorkItem(id, pat);
   }
   await linkAttachments(id, uploaded, pat);
-  await linkThread(id, threadUrl, pat);
-  const current = await getWorkItem(id, pat);
+  if (threadUrl && !hasHyperlink(current, threadUrl)) {
+    await linkThread(id, threadUrl, pat);
+  }
   const repro = current.fields?.["Microsoft.VSTS.TCM.ReproSteps"] || "";
-  await patchReproSteps(id, withThreadAndImages(repro, threadUrl, uploaded), pat);
-  console.log(JSON.stringify({ id, url: editUrl(id), attached: uploaded, threadUrl: threadUrl || null }, null, 2));
+  const next = withThreadAndImages(repro, threadUrl, uploaded);
+  if (next !== repro) {
+    await patchReproSteps(id, next, pat);
+  }
+  console.log(
+    JSON.stringify(
+      {
+        id,
+        url: editUrl(id),
+        attached: uploaded,
+        skippedExisting: !forceAttach,
+        threadUrl: threadUrl || null,
+      },
+      null,
+      2
+    )
+  );
   process.exit(0);
 }
+
+const uploaded = await uploadFiles(attachments, pat);
 
 const templateKey = (arg("template") || "web").toLowerCase();
 const template = config.templates[templateKey];

@@ -1,5 +1,7 @@
 .env
 .env.local
+.env.*
+!.env.example
 *.pem
 tmp/
 .cursor/mcp.json

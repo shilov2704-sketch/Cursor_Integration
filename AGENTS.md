@@ -3,89 +3,52 @@
 Всегда отвечай пользователю на русском языке, если он явно не попросил другой язык.
 
 - Пояснения, статусы, вопросы и итоги — на русском.
-- Код, имена файлов, идентификаторы, команды git, заголовки коммитов и PR — на английском, если в проекте нет другой договорённости.
+- Код, имена файлов, идентификаторы, команды git, заголовки коммитов и PR — на английском.
 - Не переключайся на английский только потому, что интерфейс Teams или Cursor на английском.
 
-# Azure DevOps MCP
+# Azure DevOps MCP — обязательно
 
-Создавай Bug через MCP `wit_create_work_item` (сервер `ado` / `user-ado`), если инструмент доступен — и в Desktop, и в Cloud Agent / Teams.
+Work item и код HubEx — **только MCP** `ado` / `user-ado`: `wit_create_work_item`, `wit_update_work_item`, `wit_add_work_item_comment`, `search_code`, `repo_get_file_content`, `repo_list_directory`.
 
-Не проси подключить remote HTTP `mcp.dev.azure.com`: в Cursor он не логинится через Entra ID. Нужен stdio-сервер `@azure-devops/mcp` с **PAT текущего пользователя**.
+Не используй HTTP `mcp.dev.azure.com`. Нужен stdio `@azure-devops/mcp` с PAT пользователя.
 
-Токен **нельзя** брать из репозитория (`.env`, `.cursor/mcp.json`, git). Только секрет Cursor Cloud Agents / переменная окружения этого прогона, которую задал сам пользователь. Если `AZURE_DEVOPS_PAT` пуст — не подставляй чужой ключ и не ищи его в файлах проекта.
+Токен **нельзя** брать из git. ADO: секрет `AZURE_DEVOPS_PAT`. DEV HubEx: `.env` (локально) или Secrets с теми же именами. Не печатай значения.
 
-Если MCP-инструмента нет, создавай Bug сразу скриптом. Секрет `AZURE_DEVOPS_PAT` задаётся в Cursor Cloud Agents → Secrets и доступен как переменная окружения:
+`scripts/create-hubex-bug.mjs` — **только загрузка вложений**. **Запрещено** создавать Bug через REST, если MCP есть. Если MCP-инструментов нет — **не** создавай баг скриптом. Напиши, что нужно включить MCP на [cursor.com/agents](https://cursor.com/agents) → MCP.
 
-```bash
-node scripts/create-hubex-bug.mjs --template web --title "Краткий заголовок" --thread-url "https://teams.microsoft.com/l/message/..." --tenant "Frigoglass" --users "..." --page "..." --steps "..." --result "..." --expected "..." --attach screenshot.png
-```
+Первая проверка прогона: `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`).
 
-- `--template`: `web` | `backend` | `mobile`
-- Не печатай и не логируй значение токена
-- Если скрипт вернул `id` и `url` — баг создан, отдай ссылку пользователю
-- Если ошибка `AZURE_DEVOPS_PAT is missing` — секрет не попал в этот run
-- Если пользователь пишет **создай баг** — создавай сразу в этом же прогоне. Не предлагай открыть Web или Desktop. Не задавай уточняющих вопросов, из‑за которых работа встанет до ответа в другом чате.
-- Если пишет **сделай анализ** — не создавай Bug.
+# Баги HubEx
 
-# Баги в Azure DevOps
+Org `melston`, project `HubEx`, type `Bug`. Поля шаблона: `ado/bug-templates.json`. Area Path **только** из этой таблицы:
 
-Проект HubEx (org `melston`). Создавай work item типа `Bug` через MCP Azure DevOps: `wit_create_work_item`.
+| Ключ | Шаблон | Area Path | В ответе |
+|---|---|---|---|
+| web | Баг на WEB-приложение [DEV] | HubEx\\Frontend\\WebApp | Frontend |
+| backend | Баг на backend [DEV] | HubEx\\Backend | Backend |
+| mobile | Баг на МП [STG] (templateId `c0e0c23a-f7d6-4f57-83b7-445aba3a5d40`) | HubEx\\Frontend\\WorkerApp | МП |
 
-MCP не принимает `templateId`. Воспроизводи шаблон полями из `ado/bug-templates.json`.
+Iteration: `HubEx\\Next-Backlog`. Не ставь Area `AdminApp` и другие пути вне таблицы.
 
-| Платформа | Шаблон в ADO | Area Path |
-|---|---|---|
-| WEB | Баг на WEB-приложение [DEV] | HubEx\\Frontend\\WebApp |
-| Backend | Баг на backend [DEV] | HubEx\\Backend |
-| Мобильное приложение | Баг на МП [STG] | HubEx\\Frontend\\WorkerApp |
+Платформу выбирай **после анализа кода** (UI → API → сервис). Скрин веб-страницы ≠ баг на Frontend. Данные/опечатка в API → Backend. МП/android/ios/RN → mobile.
 
-Общее: `System.IterationPath` = `HubEx\\Next-Backlog`.
+Теги: `DEV; {клиент}; Create Cursor agent`. Assign пустой, сразу очистить `System.AssignedTo`.
 
-## Теги
+## Ссылка на тред
 
-`System.Tags` (не `System.Tags-Add`) всегда:
-
-`DEV; {имя клиента из треда}; Create Cursor agent`
-
-Имя клиента бери из треда Teams: тенант, клиент, канал. Пример: `DEV; Frigoglass; Create Cursor agent`. Если клиента нет — `DEV; Create Cursor agent`.
-
-## Assign
-
-Поле Assign / `System.AssignedTo` оставляй пустым. На создании передай пустую строку. Сразу после создания вызови `wit_update_work_item` с `/fields/System.AssignedTo` = `""`: процесс ADO иначе назначает владельца PAT.
-
-## Ссылка на тред Teams
-
-В Repro Steps ссылка на тред — **сразу после «Страница/форма» и перед «Действия»**:
-
-```html
-<p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>
-```
-
-`{url}` — `https://teams.microsoft.com/...` из сообщения/треда или deep link из `conversationId` / `messageId` / `tenantId` / `teamId`. Не выдумывай URL. Если ссылки нет — `не указан` и попроси Copy link. Передай URL в скрипт `--thread-url` (добавит Hyperlink на work item).
+После «Страница/форма», перед «Действия». URL: `node scripts/extract-teams-thread.mjs --text "..."`. Не выдумывать. Нет ссылки — `не указан`.
 
 ## Вложения
 
-Перенеси в баг все фото, видео и другие файлы из треда. У ADO MCP нет загрузки вложений. **Не заканчивай прогон**, пока не выполнен скрипт ниже (даже если файлов не нашлось — он допишет ссылку на тред).
-
-1. Найди бинарники (пути в промпте, `find` по `/tmp`, `~/.cursor/attachments`, `/opt/cursor/attachments`) и скопируй в `tmp/bug-attachments/`
-2. Выполни:
+Только при **первом** создании:
 
 ```bash
-node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/bug-attachments --thread-url "{url}"
+node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --discover --attach-dir tmp/bug-attachments --thread-url "{url}"
 ```
 
-Если файла нет на диске (агент видит картинку, но бинарник недоступен) — баг создай, напиши какие вложения не перенеслись и попроси приложить файл, затем догрузи тем же скриптом.
+Follow-up «поправь баг» — без `--attach-to`. Скрипт не прикрепляет файл, который уже есть на work item.
 
-Обязательные поля при создании:
-
-- `System.Title`
-- `System.AreaPath`
-- `System.IterationPath`
-- `System.Tags`
-- `System.AssignedTo` (пусто)
-- `Microsoft.VSTS.TCM.ReproSteps` в HTML (`format: Html`)
-
-Структура Repro Steps:
+## Repro Steps
 
 ```html
 <p><b>Тенант:</b> <i>…</i></p>
@@ -103,37 +66,23 @@ node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/b
 <p><i>…</i></p>
 ```
 
-Не пиши один блок «Результат». Всегда разделяй: что произошло и как должно быть. Если ожидаемое в треде не сказано явно — сформулируй по смыслу бага.
+Условие «если…» в title/шагах/факте — одно, как в треде. Не инвертировать.
 
-## Команды из Teams
+# Команды Teams
 
-Две разные команды. Не путай.
+### `@Cursor создай баг` / заведи баг
 
-### `@Cursor создай баг`
-
-Создай Bug сразу (MCP или скрипт). Не делай анализ кода, если не просили. Skill: `create-hubex-bug`.
-
-Платформу не спрашивай. Определи по треду:
-
-- МП, мобильное, android, ios, worker app → `mobile`
-- backend, API, ручка, 500, сервер → `backend`
-- веб, страница, форма, сайдбар, браузер, QR, тултип → `web`
-- неясно → `web`
-
-В финальном сообщении дай ID и ссылку `https://melston.visualstudio.com/HubEx/_workitems/edit/{id}`.
-
-Не спрашивай подтверждение и не проси открыть Web или Desktop.
+1. Анализ по skill `analyze-hubex-issue` (MCP).
+2. Воспроизведение на DEV, tenant 5: Backend — `scripts/hubex-api.mjs`, Frontend — Playwright `scripts/repro_web.py`. Креды из `.env` / Secrets, не светить.
+3. Bug через MCP.
+4. Анализ и результат воспроизведения — `wit_add_work_item_comment`.
+5. Вложения один раз.
+6. Ответ: `Сделал анализ и завел Bug на Backend/Frontend/МП: {url}`
 
 ### `@Cursor сделай анализ`
 
-Только разбор причины по коду HubEx. **Не создавай Bug.** Skill: `analyze-hubex-issue`. Репозитории: `ado/code-repos.json`. MCP: `search_code`, `repo_get_file_content`, `repo_list_directory` (проект `HubEx`).
+Только разбор. **Полный текст анализа в ответе.** Баг не создавать. DEV/Playwright не обязательны.
 
-В ответе: проблема, какие репо смотрел, шаги воспроизведения, потенциальные причины с путями и фрагментами кода.
+### Follow-up правки бага
 
-### Обе команды в одном сообщении
-
-Сначала анализ, затем баг.
-
-### Нет ни той ни другой команды
-
-Не создавай work item. Напиши: укажите `@Cursor создай баг` или `@Cursor сделай анализ`.
+Только update полей/комментарий. Не грузить вложения повторно.

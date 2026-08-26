@@ -16,7 +16,8 @@
       "primary": ["HubEx.Service.WORK.Api"],
       "byKeyword": {
         "заявк|QR|task|work type|вид работ": ["HubEx.Service.WORK.Api", "HubEx.WORK.Task"],
-        "объект|asset|компани|ES": ["HubEx.Service.ES.Api"],
+        "объект|asset|компани|ES|аватар|родител|дочерн|тип объекта": ["HubEx.Service.ES.Api"],
+        "склад|warehouse|WH|оприход|Receipt": ["HubEx.Service.WH.Api"],
         "пользовател|роль|тенант|ADM": ["HubEx.Service.ADM.Api"],
         "auth|логин|токен": ["HubEx.Service.AUTH.Api", "HubEx.Service.AUTHN.Api", "HubEx.Service.AUTHZ.Api"],
         "импорт": ["HubEx.Service.IMPORT.Api"],

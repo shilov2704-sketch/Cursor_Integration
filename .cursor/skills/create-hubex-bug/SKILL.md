@@ -1,56 +1,72 @@
 ---
 name: create-hubex-bug
-description: Создать Bug в Azure DevOps HubEx. Использовать только когда пользователь пишет «создай баг», «заведи баг», «заведи дефект» или create bug. Не использовать для «сделай анализ».
+description: Создать Bug в Azure DevOps HubEx. Использовать когда пользователь пишет «создай баг», «заведи баг», «заведи дефект» или create bug. Сначала анализ кода, затем work item.
 ---
 
 # Создать Bug HubEx
 
-Только команда **создай баг** (заведи баг / заведи дефект / create bug). Если написали «сделай анализ» — не этот skill, баг не создавать.
+Синонимы: создай баг / заведи баг / заведи дефект / create bug.
 
-Из Teams / Cloud Agent создавай баг сразу, в этом же прогоне. Не проси открыть Web или Desktop и не задавай вопросов, без ответа на которые баг не появится. Платформу определи по треду (МП → mobile, API/ручка → backend, веб/страница/неясно → web).
+**Порядок в одном прогоне:** анализ кода (MCP) → воспроизведение на DEV tenant 5 → создать Bug (MCP) → комментарий с анализом и результатом воспроизведения → вложения один раз → короткий ответ в Teams.
 
-**Не заканчивай прогон**, пока не сделаны все три шага: создать work item → вставить ссылку на тред Teams → перенести вложения. Пропуск вложений или ссылки на тред — ошибка.
+Не проси открыть Web/Desktop. Не задавай вопросов, без которых баг не появится.
 
-## 1. Ссылка на тред Teams (обязательно)
+Если пользователь просит **только** «сделай анализ» / проанализируй **без** «создай/заведи баг» — этот skill **не** использовать: только `analyze-hubex-issue`, полный разбор **в ответе**, work item не создавать.
 
-В `Microsoft.VSTS.TCM.ReproSteps` ссылка на тред — **следующая строка после «Страница/форма» и перед «Действия»**:
+## 0. MCP обязателен для work item и кода
+
+Создание, правки полей, комментарий, поиск кода — **только** MCP `ado` / `user-ado`:
+
+- `search_code`, `repo_get_file_content`, `repo_list_directory`
+- `wit_create_work_item`, `wit_update_work_item`, `wit_add_work_item_comment`, `wit_get_work_item`
+
+`scripts/create-hubex-bug.mjs` — **только вложения** (и ссылка на тред, если MCP её не записал). **Запрещено** создавать Bug этим скриптом, если MCP доступен. Если MCP-инструментов нет — **не** создавай баг через REST. Напиши: подключите MCP `ado` на [cursor.com/agents](https://cursor.com/agents) → MCP (stdio, `npx -y @azure-devops/mcp melston --authentication pat`, `PERSONAL_ACCESS_TOKEN` = `${env:AZURE_DEVOPS_PAT}`).
+
+Первым вызовом проверь MCP: `wit_get_work_item_type` с `project=HubEx`, `workItemType=Bug`.
+
+## 1. Анализ (всегда)
+
+Следуй skill `analyze-hubex-issue`. Платформу бери из **причины**, не со скрина.
+
+Шаблон и Area Path — только из `ado/bug-templates.json`, ничего не выдумывай:
+
+| Ключ | Когда | Шаблон ADO | Area Path | В ответе Teams |
+|---|---|---|---|---|
+| `web` | вёрстка/UI веба, админка как UI | Баг на WEB-приложение [DEV] | `HubEx\Frontend\WebApp` | Frontend |
+| `backend` | API, справочник, сид, 500, неверные данные с сервера | Баг на backend [DEV] | `HubEx\Backend` | Backend |
+| `mobile` | МП, android, ios, RN, Worker App | Баг на МП [STG] | `HubEx\Frontend\WorkerApp` | МП |
+
+МП: templateId `c0e0c23a-f7d6-4f57-83b7-445aba3a5d40`. Не используй Area `AdminApp` / другие пути вне таблицы.
+
+## 1b. Воспроизведение на DEV (tenant 5)
+
+Skill `reproduce-hubex-dev`. Креды только из `.env` / Secrets, **не печатать**.
+
+- Backend → `node scripts/hubex-api.mjs GET /ручка` (креды Backend: `URL_DEV_HUBEX`, `SECOND_BASIC_TOKEN`, …)
+- Frontend → `python scripts/repro_web.py /путь` (креды Frontend: `HOST_URL`, `TEST_USER`, `TEST_PASS`, …)
+- МП — API по тем же ручкам, если экран не открыть в вебе
+
+Результат (воспроизвелось / нет / нет кредов) — в комментарий к багу, без токенов. Нет `.env` — баг всё равно создай.
+
+## 2. Ссылка на тред Teams
+
+В Repro Steps — **после «Страница/форма» и перед «Действия»**:
 
 ```html
 <p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>
 ```
 
-Откуда взять `{url}` (по порядку):
+Достань URL:
 
-1. Любая ссылка `https://teams.microsoft.com/...` в сообщении пользователя или в тексте треда.
-2. Идентификаторы в контексте промпта / метаданных: `conversationId`, `channelId`, `teamId`, `messageId`, `tenantId`, `parentMessageId`. Собери deep link:
-
-```text
-https://teams.microsoft.com/l/message/{conversationId}/{messageId}?tenantId={tenantId}&groupId={teamId}&parentMessageId={parentMessageId}
+```bash
+node scripts/extract-teams-thread.mjs --text "сюда целиком сообщение пользователя и контекст треда"
 ```
 
-`messageId` — id корневого сообщения треда (parent). Не выдумывай GUID и URL.
+Либо готовая `https://teams.microsoft.com/...` из промпта. Не выдумывай GUID. Нет URL — `не указан`, в комментарии к багу попроси Copy link; в Teams это не разворачивай длинным текстом.
 
-3. Если URL нет — пиши `<p><b>Тред Teams:</b> <i>не указан</i></p>` и в ответе пользователю попроси в следующем сообщении: в Teams у корневого сообщения треда **Copy link** / **Копировать ссылку** и прислать `@Cursor` — затем допиши в баг скриптом `--thread-url`.
+## 3. Создать work item (MCP)
 
-Передай URL ещё и в скрипт: `--thread-url "{url}"` (он же добавит Hyperlink на work item).
-
-## 2. Создать work item
-
-Сначала MCP `wit_create_work_item` (сервер `ado` / `user-ado`), если инструмент есть. Шаблоны: `ado/bug-templates.json`.
-
-### Обязательные поля
-
-- `System.Title`
-- `System.AreaPath` / `System.IterationPath` по шаблону
-- `System.Tags` = `DEV; {имя клиента из треда}; Create Cursor agent`
-- `System.AssignedTo` = пустая строка
-- `Microsoft.VSTS.TCM.ReproSteps` (`format: Html`) — шаблон ниже. Не пиши один блок «Результат». Если ожидаемое в треде не сказано явно — сформулируй по смыслу бага.
-
-Имя клиента бери из треда: тенант, название клиента, канал. Пример: `DEV; Frigoglass; Create Cursor agent`. Если клиента нет — `DEV; Create Cursor agent`. Не используй `System.Tags-Add`.
-
-После создания сразу сними назначение: `wit_update_work_item` с `/fields/System.AssignedTo` = `""`.
-
-### Repro Steps HTML
+Поля: `System.Title`, Area/Iteration из шаблона, `System.Tags` = `DEV; {клиент}; Create Cursor agent`, `System.AssignedTo` = `""`, `Microsoft.VSTS.TCM.ReproSteps` `format: Html`.
 
 ```html
 <p><b>Тенант:</b> <i>…</i></p>
@@ -68,44 +84,32 @@ https://teams.microsoft.com/l/message/{conversationId}/{messageId}?tenantId={ten
 <p><i>…</i></p>
 ```
 
-## 3. Вложения из треда (обязательно, сразу после создания)
+Условие «если…» в title, шагах и фактическом результате — **одно и то же**, как в треде.
 
-ADO MCP **не умеет** загружать файлы. Картинку «видеть» недостаточно: в баг попадает только бинарник с диска. После создания **сразу** перенеси фото, видео и прочие файлы.
+Сразу `wit_update_work_item`: `/fields/System.AssignedTo` = `""`.
 
-1. Найди файлы. Смотри пути в промпте, блоки вложений, `Read`/`Glob` по картинкам. Скопируй в `tmp/bug-attachments/` (имена сохрани). Типичные места:
+## 4. Комментарий с анализом
 
-   - пути вида `/tmp/...`, `uploads/`, `attachments/`
-   - `tmp/bug-attachments/`
-   - `~/.cursor/attachments`
-   - `/opt/cursor/attachments`
+`wit_add_work_item_comment`, `format: Markdown`, `project: HubEx`. Кратко: платформа, репозитории, цепочка UI→API, причина с путями, что проверить. Это не дублировать в ответе Teams.
 
-   Пример поиска:
+## 5. Вложения — один раз при создании
 
-   ```bash
-   mkdir -p tmp/bug-attachments
-   find /tmp "$HOME/.cursor/attachments" /opt/cursor/attachments . -maxdepth 5 \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.gif' -o -iname '*.webp' -o -iname '*.mp4' -o -iname '*.mov' -o -iname '*.webm' -o -iname '*.pdf' \) 2>/dev/null
-   ```
-
-   Найденные файлы из треда скопируй в `tmp/bug-attachments/`. Не тащи служебные файлы репозитория.
-
-2. **Всегда** выполни (даже если папка пустая — скрипт допишет ссылку на тред и снимет Assign):
+Только после **первого** create, не на follow-up «поправь баг»:
 
 ```bash
-node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --attach-dir tmp/bug-attachments --thread-url "{url}"
+node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --discover --attach-dir tmp/bug-attachments --thread-url "{url}"
 ```
 
-Скрипт сам ищет файлы в известных каталогах (`--discover` включён по умолчанию для `--attach-to`). Картинки попадают и как AttachedFile, и в Repro Steps (`<img>`).
+Скрипт сам пропускает уже прикреплённые файлы и повторный Hyperlink.
 
-Отдельные пути: `--attach "path/to/file.png"`. Проверка без загрузки: `--list-discovered`.
+Follow-up редактирования: `wit_update_work_item` / комментарий. **Не** запускай `--attach-to` и `--discover`, пока пользователь не прислал **новые** файлы (`--attach path`, без `--discover`).
 
-3. Если бинарника нет (модель видит скриншот, файла на диске нет) — баг всё равно создай, в ответе явно напиши какие вложения **не** перенеслись и попроси приложить файлы в чат / follow-up `@Cursor`, затем догрузи тем же `--attach-to`.
+## 6. Ответ в Teams (коротко)
 
-Не пиши в финале «вложения перенесены», если `attached` в выводе скрипта пустой, а в треде были скриншоты.
+Одна-две строки, без простыни анализа:
 
-## Если MCP недоступен
-
-```bash
-node scripts/create-hubex-bug.mjs --template web --title "..." --thread-url "https://teams.microsoft.com/l/message/..." --tenant "Frigoglass" --users "..." --page "..." --steps "..." --result "..." --expected "..." --attach screenshot.png
+```text
+Сделал анализ и завел Bug на Backend: https://melston.visualstudio.com/HubEx/_workitems/edit/{id}
 ```
 
-Шаблоны: `web`, `backend`, `mobile`. Токен: `AZURE_DEVOPS_PAT`. Не выводи его. После успеха верни `https://melston.visualstudio.com/HubEx/_workitems/edit/{id}`.
+Подставь Frontend / Backend / МП по шаблону.
