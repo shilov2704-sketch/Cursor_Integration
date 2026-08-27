@@ -11,6 +11,10 @@ description: Воспроизвести кейс HubEx на DEV, tenant 5. API �
 
 Перед вызовами: `node scripts/sync-dev-env.mjs`. Не делай `cat .env`.
 
+Код уже должен быть просмотрен (skill `analyze-hubex-issue`). MCP `hubex` здесь — **доп. инструмент воспроизведения**, не замена репозиториям.
+
+Если `hubex` есть — читай и при необходимости **создавай тестовые** заявки/объекты на DEV (префикс `[MCP-TEST]`). Не удаляй и не ломай чужие данные. Нет `hubex` — скрипты ниже.
+
 ## Backend
 
 Ключи: `API_USER_TOKEN`, `SECOND_BASIC_TOKEN`, `POWER_USER_TOKEN`, `TENANT_ID`, `TENANT_MEMBER_ID`, `APP_ID`, `URL_DEV_HUBEX`, `USER_EMAIL`, `USER_PHONE`.

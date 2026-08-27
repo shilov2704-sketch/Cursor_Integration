@@ -6,11 +6,19 @@
 - Код, имена файлов, идентификаторы, команды git, заголовки коммитов и PR — на английском.
 - Не переключайся на английский только потому, что интерфейс Teams или Cursor на английском.
 
-# Azure DevOps MCP — обязательно
+# Azure DevOps MCP — обязательно для багов и кода
 
 Work item и код HubEx — **только MCP** `ado` / `user-ado`: `wit_create_work_item`, `wit_update_work_item`, `wit_add_work_item_comment`, `search_code`, `repo_get_file_content`, `repo_list_directory`.
 
 Не используй HTTP `mcp.dev.azure.com`. Нужен stdio `@azure-devops/mcp` с PAT пользователя.
+
+# HubEx MCP — живые данные DEV
+
+Порядок всегда такой: **сначала код** в репозиториях HubEx через MCP `ado` (`search_code`, `repo_get_file_content`). MCP `hubex` (`@hubex/mcp`) — **дополнение** для живых данных DEV и воспроизведения (RW). Карточки Bug — только `ado`.
+
+Не печатай `HUBEX_SERVICE_TOKEN` / `API_USER_TOKEN`. При воспроизведении можно создавать тестовые сущности через `hubex` (пакет помечает их `[MCP-TEST]`). Не трогай чужие боевые записи и не делай DELETE без явной просьбы.
+
+Если `hubex` нет — анализ кода не останавливай; воспроизведение через `scripts/hubex-api.mjs` / Playwright.
 
 Токен **нельзя** брать из git. ADO: секрет `AZURE_DEVOPS_PAT`. DEV HubEx: `.env` (локально) или Secrets с теми же именами. Не печатай значения.
 
@@ -73,7 +81,7 @@ Follow-up «поправь баг» — без `--attach-to`. Скрипт не 
 ### `@Cursor создай баг` / заведи баг
 
 1. Анализ по skill `analyze-hubex-issue` (MCP).
-2. Воспроизведение на DEV, tenant 5: Backend — `scripts/hubex-api.mjs`, Frontend — Playwright `scripts/repro_web.py`. Креды из `.env` / Secrets, не светить.
+2. Воспроизведение на DEV, tenant 5: сначала код, затем MCP `hubex` (RW); запасной путь — `scripts/hubex-api.mjs` / Playwright. Креды из Secrets, не светить.
 3. Bug через MCP.
 4. Анализ и результат воспроизведения — `wit_add_work_item_comment`.
 5. Вложения один раз.

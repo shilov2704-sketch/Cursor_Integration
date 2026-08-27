@@ -17,12 +17,12 @@
         ↓
 Клонирует публичный Cursor_Integration  →  читает AGENTS.md, rules, skills
         ↓
-MCP Azure DevOps (обязателен) + секрет AZURE_DEVOPS_PAT
+MCP Azure DevOps (обязателен) + MCP HubEx (живые данные DEV) + секрет AZURE_DEVOPS_PAT
         ↓
 Анализ кода HubEx и Bug в org melston (от вашего имени в ADO)
 ```
 
-В git нет рабочего `.cursor/mcp.json` с токеном (локальный Desktop-файл в `.gitignore`). Облачный агент **не подхватывает** MCP из репозитория: сервер `ado` нужно добавить в **вашем** дашборде Cursor (шаг 5) и включить в MCP dropdown запуска. Без этого агент не должен создавать баги через REST.
+В git нет рабочего `.cursor/mcp.json` с токеном (локальный Desktop-файл в `.gitignore`). Облачный агент **не подхватывает** MCP из репозитория: серверы `ado` и `hubex` нужно добавить в **вашем** дашборде Cursor (шаги 5 и 5b) и включить в MCP dropdown запуска.
 
 ---
 
@@ -165,6 +165,39 @@ MCP настраивается **у вас в Cursor**, не копируетс�
 
 ---
 
+## Шаг 5b. MCP HubEx — живые данные DEV
+
+Дополнительный сервер [`@hubex/mcp`](https://www.npmjs.com/package/@hubex/mcp): живые данные DEV и воспроизведение (RW). **Сначала код в репозиториях через `ado`**, затем HubEx MCP. Карточки Bug создаёт только `ado`.
+
+Токен в Cloud Agent нельзя ввести интерактивно, поэтому режим `service` и уже существующий секрет `API_USER_TOKEN`.
+
+1. [cursor.com/agents](https://cursor.com/agents) → MCP → **Add custom MCP**.
+2. Транспорт: **stdio**.
+
+| Поле | Значение |
+|---|---|
+| Name | `hubex` |
+| Command | `npx` |
+| Args | `-y` |
+| | `@hubex/mcp` |
+
+Env (каждое имя — отдельная переменная):
+
+| Name | Value |
+|---|---|
+| `HUBEX_ENV` | `dev` |
+| `HUBEX_APPLICATION_ID` | `${env:APP_ID}` |
+| `HUBEX_TENANT_ID` | `${env:TENANT_ID}` |
+| `HUBEX_AUTH_MODE` | `service` |
+| `HUBEX_SERVICE_TOKEN` | `${env:API_USER_TOKEN}` |
+| `HUBEX_READONLY` | `false` |
+
+3. Toggle `hubex` **включить**. Если сервер уже добавлен с `HUBEX_READONLY=true` — поменяйте на `false` и сохраните. Нужен новый прогон `@Cursor`.
+
+Если MCP пишет ошибку про application id — в Secrets `APP_ID` должно быть то, что ждёт HubEx MCP (часто `5`). Не вставляйте сырой токен в поле Value.
+
+---
+
 ## Шаг 6. Приложение Cursor в Microsoft Teams
 
 Под **своей** учёткой Cursor.
@@ -231,7 +264,8 @@ MCP настраивается **у вас в Cursor**, не копируетс�
 | Нет карточки / не стартует     | Шаги 2 и 6: Cloud Agents, Teams Connect, `@Cursor help`                    |
 | Просит открыть Web или Desktop | Писать в **треде канала**                                                  |
 | «AZURE_DEVOPS_PAT is missing»  | Шаги 3–4: **свой** PAT в Secrets, имя точно `AZURE_DEVOPS_PAT`             |
-| MCP не логинится / 401 / агент пишет «нет MCP» | Шаг 5: сервер `ado` **включён** в MCP dropdown, токен `${env:AZURE_DEVOPS_PAT}` |
+| MCP не логинится / 401 / агент пишет «нет MCP» | Шаг 5: сервер `ado` **включён**; шаг 5b: сервер `hubex` включён |
+| HubEx MCP 401 / нет application id | Secrets `API_USER_TOKEN` и `APP_ID` (часто `5`), toggle `hubex` |
 | Агент создаёт баг через REST, не через MCP | Шаг 5 не выполнен или MCP выключен у Cloud Agent — включите `ado` и перезапустите |
 | Баг 403                        | У вашей учётки ADO есть права на HubEx, scope Work Items Read & write      |
 | Анализ без кода                | Шаг 5 + у PAT scope **Code Read**                                          |
