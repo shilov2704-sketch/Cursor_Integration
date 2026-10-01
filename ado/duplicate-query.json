@@ -1,0 +1,11 @@
+{
+  "id": "6f6094ee-e025-4542-955c-783388b648ed",
+  "name": "Active Bugs",
+  "path": "Shared Queries/Active Bugs",
+  "url": "https://dev.azure.com/melston/HubEx/_queries/query/6f6094ee-e025-4542-955c-783388b648ed/",
+  "project": "HubEx",
+  "workItemType": "Bug",
+  "excludeStates": ["Closed", "Released", "Rejected"],
+  "workItemUrl": "https://melston.visualstudio.com/HubEx/_workitems/edit/{id}",
+  "note": "Before analysis or create: search_workitem with keywords from the thread, keep only Bugs that match this query (not Closed/Released/Rejected). Do not list the whole query."
+}

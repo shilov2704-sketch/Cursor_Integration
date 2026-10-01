@@ -10,7 +10,7 @@
 
 | Команда | Результат |
 |---|---|
-| `@Cursor создай баг` | Анализ кода, Bug (Frontend / Backend / МП) |
+| `@Cursor создай баг` | Поиск дублей в Active Bugs, затем анализ и Bug (Frontend / Backend / МП) |
 | `@Cursor сделай анализ` | Полный разбор по коду в ответе. Баг не создаётся |
 
 ## Как подключиться
@@ -34,6 +34,7 @@
 | `TEAMS.md` | Инструкция для сотрудников |
 | `.cursor/rules/`, `.cursor/skills/` | Команды, шаблоны багов, анализ |
 | `ado/bug-templates.json` | Поля Bug в HubEx |
+| `ado/duplicate-query.json` | Query Active Bugs для поиска дублей перед create |
 | `ado/mcp-tools.json` | Новые и старые имена ADO MCP |
 | `ado/code-repos.json` | Какие репозитории HubEx смотреть при анализе |
 | `scripts/create-hubex-bug.mjs` | Только вложения к уже созданному багу (не создание work item) |

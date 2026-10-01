@@ -19,6 +19,8 @@ Work item и код HubEx — **только инструменты MCP** `ado` 
 | Создать Bug | `wit_work_item_write` `action=create` | `wit_create_work_item` |
 | Обновить WI | `wit_work_item_write` `action=update` | `wit_update_work_item` |
 | Комментарий | `wit_work_item_comment_write` `action=add` | `wit_add_work_item_comment` |
+| Поиск WI | `search_workitem` | `search_workitem` |
+| Query по id | `wit_get_query_results_by_id` | `wit_get_query_results_by_id` |
 | Поиск кода | `search_code` | `search_code` |
 | Файл | `repo_file` `action=get_content` | `repo_get_file_content` |
 | Папка | `repo_file` `action=list_directory` | `repo_list_directory` |
@@ -98,15 +100,16 @@ Follow-up «поправь баг» — без `--attach-to`, если нет н
 
 ### `@Cursor создай баг` / заведи баг
 
-1. Анализ по skill `analyze-hubex-issue` (MCP `ado`).
-2. Bug через MCP (в Repro Steps обязательна строка **Тред Teams** со ссылкой).
-3. Анализ — `wit_work_item_comment_write` `add` или `wit_add_work_item_comment`.
-4. `create-hubex-bug.mjs --attach-to` **всегда**, даже без файлов: дописывает ссылку на тред.
-5. Ответ: `Сделал анализ и завел Bug на Backend/Frontend/МП: {url}`
+Команда в Teams та же. **Сначала дубли, потом анализ и create.** Query: `ado/duplicate-query.json` (`Active Bugs`, id `6f6094ee-e025-4542-955c-783388b648ed`) + `search_workitem` по ключевым словам из треда.
+
+1. Поиск дублей (MCP `search_workitem`, `project=HubEx`, `workItemType=Bug`). Оставь только активные: не `Closed` / `Released` / `Rejected`. Не выгружай всю query. Не анализируй код и не создавай Bug на этом шаге.
+2. **Нашёл тот же кейс** — остановись. В Teams ссылка `https://melston.visualstudio.com/HubEx/_workitems/edit/{id}` и текст: если этот баг не подходит — напишите, и я заведу новый со свежим анализом. **Жди ответа.** Не создавай work item.
+3. **Не нашёл** — анализ (`analyze-hubex-issue`) → Bug → комментарий → `--attach-to`. Ответ: `Сделал анализ и завел Bug на Backend/Frontend/МП: {url}` и строка «Ранее созданных багов с данной проблемой не найдено.»
+4. Follow-up «не подходит» / «заведи новый» после показанных дублей — анализ и новый Bug. Показанные id больше не считать дублем.
 
 ### `@Cursor сделай анализ`
 
-Только разбор. **Полный текст анализа в ответе.** Баг не создавать.
+Только разбор. **Полный текст анализа в ответе.** Bug не создавать. Поиск дублей не обязателен.
 
 ### Follow-up правки бага
 

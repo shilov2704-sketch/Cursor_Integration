@@ -1,22 +1,23 @@
 ---
 name: create-hubex-bug
-description: Создать Bug в Azure DevOps HubEx. Использовать когда пользователь пишет «создай баг», «заведи баг», «заведи дефект» или create bug. Сначала анализ кода, затем work item.
+description: Создать Bug в Azure DevOps HubEx. Использовать когда пользователь пишет «создай баг», «заведи баг», «заведи дефект» или create bug. Сначала поиск дублей, затем анализ кода, затем work item.
 ---
 
 # Создать Bug HubEx
 
-Синонимы: создай баг / заведи баг / заведи дефект / create bug.
+Синонимы: создай баг / заведи баг / заведи дефект / create bug. Команда в Teams **не меняется**.
 
-**Порядок в одном прогоне:** анализ кода (MCP `ado`) → extract URL треда Teams → создать Bug (MCP, в Repro Steps кликабельная ссылка) → `--attach-to` **всегда** (допишет ссылку, если MCP её съел) → комментарий с анализом → короткий ответ в Teams. **Не воспроизводи** кейс на DEV HubEx. Прогон без строки «Тред Teams» в баге не заканчивай.
+**Порядок в одном прогоне:** поиск дублей → (если нет совпадения) анализ кода (MCP `ado`) → extract URL треда Teams → создать Bug (MCP, в Repro Steps кликабельная ссылка) → `--attach-to` **всегда** (допишет ссылку, если MCP её съел) → комментарий с анализом → короткий ответ в Teams. **Не воспроизводи** кейс на DEV HubEx. Прогон без строки «Тред Teams» в баге не заканчивай.
 
-Не проси открыть Web/Desktop. Не задавай вопросов, без которых баг не появится.
+Не проси открыть Web/Desktop. Кроме вопроса про найденный дубль других уточнений не задавай.
 
 Если пользователь просит **только** «сделай анализ» / проанализируй **без** «создай/заведи баг» — этот skill **не** использовать: только `analyze-hubex-issue`, полный разбор **в ответе**, work item не создавать.
 
 ## 0. MCP обязателен для work item и кода
 
-Создание, правки, комментарий, поиск кода — **только MCP** `ado` из этого прогона. Карта имён: `ado/mcp-tools.json`.
+Создание, правки, комментарий, поиск кода и дублей — **только MCP** `ado` из этого прогона. Карта имён: `ado/mcp-tools.json`.
 
+- Дубли: `search_workitem`; query `wit_get_query_results_by_id` / `wit_query_by_wiql`
 - Код: `search_code`; файл `repo_file` `get_content` или `repo_get_file_content`
 - Bug: `wit_work_item_write` `action=create` или `wit_create_work_item`
 - Update: `wit_work_item_write` `action=update` или `wit_update_work_item`
@@ -26,7 +27,31 @@ description: Создать Bug в Azure DevOps HubEx. Использовать 
 
 Первый вызов: `wit_work_item` `get_type` или `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`). Если ответ HTML логина — MCP без PAT, остановись.
 
-## 1. Анализ (всегда)
+## 1. Дубли (до анализа и create)
+
+Карта: `ado/duplicate-query.json`. Query [Active Bugs](https://dev.azure.com/melston/HubEx/_queries/query/6f6094ee-e025-4542-955c-783388b648ed/) — id `6f6094ee-e025-4542-955c-783388b648ed`. Это открытые Bug: не `Closed`, не `Released`, не `Rejected`.
+
+Пропуск этого шага только если в **этом же треде** пользователь уже ответил, что показанные баги не подходят.
+
+1. Из треда 3–7 ключевых слов кейса (экран, симптом, сущность). Не бери слова «баг», «ошибка», «HubEx».
+2. `search_workitem`: `searchText` = эти слова, `project=["HubEx"]`, `workItemType=["Bug"]`, `top` 15–20. При пустом ответе — второй запрос с другими словами из треда.
+3. Оставь только элементы, которые попали бы в Active Bugs (тип Bug, state не из `excludeStates`). Не выгружай всю query списком в чат.
+4. Прочитай title / Repro у 3–5 самых близких (`wit_work_item` `get` или `wit_get_work_item`). Совпадение — **тот же кейс**, не «похожий экран».
+
+**Нашёл совпадение** — анализ и create **не делай**. Ответ в Teams (без простыни):
+
+```text
+Похожий баг уже есть: https://melston.visualstudio.com/HubEx/_workitems/edit/{id}
+Если этот баг не подходит — напишите, и я заведу новый со свежим анализом.
+```
+
+Несколько кандидатов — несколько ссылок, тот же вопрос. **Жди ответа пользователя.**
+
+**Не нашёл** — переходи к анализу и create.
+
+Follow-up «не подходит» / «не тот» / «заведи новый» / «это другой баг»: показанные id больше не дубли. Дальше анализ и новый Bug.
+
+## 2. Анализ (если дублей нет или пользователь их отверг)
 
 Следуй skill `analyze-hubex-issue`. Платформу бери из **причины**, не со скрина.
 
@@ -42,7 +67,7 @@ description: Создать Bug в Azure DevOps HubEx. Использовать 
 
 Не вызывай MCP HubEx, `scripts/hubex-api.mjs`, Playwright.
 
-## 2. Ссылка на тред Teams (обязательно)
+## 3. Ссылка на тред Teams (обязательно)
 
 Не пропускай этот шаг, даже если в промпте нет `https://teams.microsoft.com/...`.
 
@@ -70,7 +95,7 @@ node scripts/extract-teams-thread.mjs --text-file tmp/teams-context.txt
 
 `url: null` — `<p><b>Тред Teams:</b> <i>не указан</i></p>`. В Teams это не разворачивай длинным текстом.
 
-## 3. Создать work item (MCP)
+## 4. Создать work item (MCP)
 
 Поля: `System.Title`, Area/Iteration из шаблона, `System.Tags` = `DEV; {клиент}; Create Cursor agent`, `System.AssignedTo` = `""`, `Microsoft.VSTS.TCM.ReproSteps` `format: Html`.
 
@@ -94,11 +119,11 @@ node scripts/extract-teams-thread.mjs --text-file tmp/teams-context.txt
 
 Сразу `wit_update_work_item`: `/fields/System.AssignedTo` = `""`.
 
-## 4. Комментарий с анализом
+## 5. Комментарий с анализом
 
 `wit_add_work_item_comment`, `format: Markdown`, `project: HubEx`. Кратко: платформа, репозитории, цепочка UI→API, причина с путями, что проверить. Это не дублировать в ответе Teams.
 
-## 5. Ссылка на тред и вложения — всегда после create
+## 6. Ссылка на тред и вложения — всегда после create
 
 Даже если файлов нет, сразу:
 
@@ -110,12 +135,13 @@ node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --discover --attac
 
 Follow-up редактирования: `wit_update_work_item` / комментарий. **Не** запускай `--attach-to` и `--discover`, пока пользователь не прислал **новые** файлы (`--attach path`, без `--discover`). Если в баге нет ссылки на тред — тогда `--attach-to` с `--thread-url` без `--discover`.
 
-## 6. Ответ в Teams (коротко)
+## 7. Ответ в Teams (коротко)
 
 Одна-две строки, без простыни анализа:
 
 ```text
 Сделал анализ и завел Bug на Backend: https://melston.visualstudio.com/HubEx/_workitems/edit/{id}
+Ранее созданных багов с данной проблемой не найдено.
 ```
 
-Подставь Frontend / Backend / МП по шаблону.
+Подставь Frontend / Backend / МП по шаблону. Вторую строку пиши только если create шёл после поиска без дублей (не после «не подходит»).
