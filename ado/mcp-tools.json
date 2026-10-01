@@ -1,0 +1,15 @@
+{
+  "note": "Cloud Agent often gets the new @azure-devops/mcp names (action parameter). Desktop may still expose the old per-operation names. Use whichever exists. Do not grep the repo for 10 minutes.",
+  "preferNew": true,
+  "map": {
+    "wit_get_work_item_type": { "tool": "wit_work_item", "action": "get_type" },
+    "wit_get_work_item": { "tool": "wit_work_item", "action": "get" },
+    "wit_create_work_item": { "tool": "wit_work_item_write", "action": "create" },
+    "wit_update_work_item": { "tool": "wit_work_item_write", "action": "update" },
+    "wit_add_work_item_comment": { "tool": "wit_work_item_comment_write", "action": "add" },
+    "search_code": { "tool": "search_code" },
+    "repo_get_file_content": { "tool": "repo_file", "action": "get_content" },
+    "repo_list_directory": { "tool": "repo_file", "action": "list_directory" },
+    "repo_list_repos_by_project": { "tool": "repo_repository", "action": "list" }
+  }
+}

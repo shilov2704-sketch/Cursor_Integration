@@ -8,23 +8,35 @@
 
 # Azure DevOps MCP — обязательно для багов и кода
 
-Work item и код HubEx — **только MCP** `ado` / `user-ado`: `wit_create_work_item`, `wit_update_work_item`, `wit_add_work_item_comment`, `search_code`, `repo_get_file_content`, `repo_list_directory`.
+Work item и код HubEx — **только инструменты MCP** `ado` / `user-ado` из этого прогона. Не пиши Python/Node JSON-RPC к `@azure-devops/mcp`, не клади PAT в файлы (`/tmp/ado-mcp`, `basic.env`). Не вызывай `mcp_auth` для PAT stdio.
 
-Не используй HTTP `mcp.dev.azure.com`. Нужен stdio `@azure-devops/mcp` с PAT пользователя.
+Имена tools зависят от версии пакета. Смотри **Available Tools** и `ado/mcp-tools.json`. Не ищи названия по репозиторию минутами.
 
-**Не используй MCP HubEx** (`@hubex/mcp`, инструменты `hubex_*`), даже если сервер виден в прогоне. Это сырой инструмент.
+| Задача | Новые имена (часто Cloud Agent) | Старые имена (часто Desktop) |
+|---|---|---|
+| Тип Bug | `wit_work_item` `action=get_type` | `wit_get_work_item_type` |
+| Читать WI | `wit_work_item` `action=get` | `wit_get_work_item` |
+| Создать Bug | `wit_work_item_write` `action=create` | `wit_create_work_item` |
+| Обновить WI | `wit_work_item_write` `action=update` | `wit_update_work_item` |
+| Комментарий | `wit_work_item_comment_write` `action=add` | `wit_add_work_item_comment` |
+| Поиск кода | `search_code` | `search_code` |
+| Файл | `repo_file` `action=get_content` | `repo_get_file_content` |
+| Папка | `repo_file` `action=list_directory` | `repo_list_directory` |
+| Список репо | `repo_repository` `action=list` | `repo_list_repos_by_project` |
 
-**Не воспроизводи кейс на DEV HubEx:** не вызывай `scripts/hubex-api.mjs`, Playwright, `scripts/repro_web.py`. Не ходи в живой DEV. Анализ и баг — только по коду через `ado` и по тексту треда.
+Не используй HTTP `mcp.dev.azure.com`. Нужен stdio `@azure-devops/mcp` с PAT: `PERSONAL_ACCESS_TOKEN` = `${env:AZURE_DEVOPS_PAT}`.
 
-Токен **нельзя** брать из git. ADO: секрет `AZURE_DEVOPS_PAT`. Не печатай значения.
+Если вызов вернул HTML логина Azure / «placeholder» — MCP не получил PAT. Напиши это пользователю. **Не** обходи через локальный spawn MCP и файл с токеном.
 
-`scripts/create-hubex-bug.mjs` — **только загрузка вложений**. **Запрещено** создавать Bug через REST, если MCP есть. Если MCP-инструментов нет — **не** создавай баг скриптом. Напиши, что нужно включить MCP на [cursor.com/agents](https://cursor.com/agents) → MCP.
+Первая проверка (один вызов, не цикл):
+1. Тип Bug: `wit_work_item` `get_type` **или** `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`).
+2. Код: `search_code` (`project=HubEx`).
 
-Первая проверка прогона:
-1. `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`) — доступ к work item.
-2. `search_code` (`project=HubEx`) — доступ к коду репозиториев.
+Нет ни новых, ни старых tools — остановись, баг не создавай.
 
-Нет этих инструментов — остановись, баг не создавай.
+**Не используй MCP HubEx** (`@hubex/mcp`, `hubex_*`), даже если сервер виден. **Не воспроизводи** кейс на DEV: не вызывай `scripts/hubex-api.mjs` и Playwright.
+
+Токен нельзя брать из git. Не печатай `AZURE_DEVOPS_PAT`. `scripts/create-hubex-bug.mjs` — только `--attach-to` (вложения и ссылка на тред), не создание Bug.
 
 # Баги HubEx
 
@@ -88,7 +100,7 @@ Follow-up «поправь баг» — без `--attach-to`, если нет н
 
 1. Анализ по skill `analyze-hubex-issue` (MCP `ado`).
 2. Bug через MCP (в Repro Steps обязательна строка **Тред Teams** со ссылкой).
-3. Анализ — `wit_add_work_item_comment`.
+3. Анализ — `wit_work_item_comment_write` `add` или `wit_add_work_item_comment`.
 4. `create-hubex-bug.mjs --attach-to` **всегда**, даже без файлов: дописывает ссылку на тред.
 5. Ответ: `Сделал анализ и завел Bug на Backend/Frontend/МП: {url}`
 
@@ -98,4 +110,4 @@ Follow-up «поправь баг» — без `--attach-to`, если нет н
 
 ### Follow-up правки бага
 
-Только update полей/комментарий. Не грузить вложения повторно.
+`wit_work_item_write` `update` или `wit_update_work_item`. Не грузить вложения повторно.

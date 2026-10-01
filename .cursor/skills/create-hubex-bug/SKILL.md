@@ -15,14 +15,16 @@ description: Создать Bug в Azure DevOps HubEx. Использовать 
 
 ## 0. MCP обязателен для work item и кода
 
-Создание, правки полей, комментарий, поиск кода — **только** MCP `ado` / `user-ado`:
+Создание, правки, комментарий, поиск кода — **только MCP** `ado` из этого прогона. Карта имён: `ado/mcp-tools.json`.
 
-- `search_code`, `repo_get_file_content`, `repo_list_directory`
-- `wit_create_work_item`, `wit_update_work_item`, `wit_add_work_item_comment`, `wit_get_work_item`
+- Код: `search_code`; файл `repo_file` `get_content` или `repo_get_file_content`
+- Bug: `wit_work_item_write` `action=create` или `wit_create_work_item`
+- Update: `wit_work_item_write` `action=update` или `wit_update_work_item`
+- Комментарий: `wit_work_item_comment_write` `action=add` или `wit_add_work_item_comment`
 
-`scripts/create-hubex-bug.mjs` — **только вложения** (и ссылка на тред, если MCP её не записал). **Запрещено** создавать Bug этим скриптом, если MCP доступен. Если MCP-инструментов нет — **не** создавай баг через REST. Напиши: подключите MCP `ado` на [cursor.com/agents](https://cursor.com/agents) → MCP (stdio, `npx -y @azure-devops/mcp melston --authentication pat`, `PERSONAL_ACCESS_TOKEN` = `${env:AZURE_DEVOPS_PAT}`).
+Не пиши `call.py` / JSON-RPC к stdio MCP. Не сохраняй PAT в файл. Нет tools — не создавай баг через REST.
 
-Первым вызовом проверь MCP: `wit_get_work_item_type` с `project=HubEx`, `workItemType=Bug`.
+Первый вызов: `wit_work_item` `get_type` или `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`). Если ответ HTML логина — MCP без PAT, остановись.
 
 ## 1. Анализ (всегда)
 

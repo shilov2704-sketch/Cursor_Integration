@@ -14,4 +14,4 @@ alwaysApply: true
 
 Если `@Cursor` без «анализ» и без «создай/заведи баг» — не создавай work item. Напиши: укажите `@Cursor создай баг` или `@Cursor сделай анализ`. Не проси открыть Web или Desktop.
 
-Follow-up «поправь баг» / «подредактируй» — только `wit_update_work_item`. **Не** вызывай `--attach-to` повторно, если нет новых файлов.
+Follow-up «поправь баг» / «подредактируй» — `wit_work_item_write` `action=update` или `wit_update_work_item`. **Не** вызывай `--attach-to` повторно, если нет новых файлов.

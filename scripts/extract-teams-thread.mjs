@@ -143,6 +143,15 @@ const text = [
   .filter(Boolean)
   .join("\n");
 
+function buildChannelUrl({ conversationId, tenantId, groupId, channelName }) {
+  if (!conversationId) return "";
+  const params = new URLSearchParams();
+  if (groupId) params.set("groupId", groupId);
+  if (tenantId) params.set("tenantId", tenantId);
+  const name = channelName || "Support";
+  return `https://teams.microsoft.com/l/channel/${conversationId}/${encodeURIComponent(name)}?${params.toString()}`;
+}
+
 const found = firstTeamsUrl(text);
 if (found) {
   console.log(JSON.stringify({ url: found, source: "prompt-or-env" }));
@@ -151,19 +160,28 @@ if (found) {
 
 const conversationId = findConversationId(text) || defaults.conversationId;
 const messageId = findMessageId(text);
-const url = buildUrl({
-  conversationId,
-  messageId,
-  tenantId: arg("tenant-id") || process.env.TEAMS_TENANT_ID || defaults.tenantId,
-  groupId: arg("group-id") || process.env.TEAMS_GROUP_ID || defaults.groupId,
-  teamName: defaults.teamName,
-  channelName: defaults.channelName,
-});
+const tenantId = arg("tenant-id") || process.env.TEAMS_TENANT_ID || defaults.tenantId;
+const groupId = arg("group-id") || process.env.TEAMS_GROUP_ID || defaults.groupId;
+const url = messageId
+  ? buildUrl({
+      conversationId,
+      messageId,
+      tenantId,
+      groupId,
+      teamName: defaults.teamName,
+      channelName: defaults.channelName,
+    })
+  : buildChannelUrl({
+      conversationId,
+      tenantId,
+      groupId,
+      channelName: defaults.channelName,
+    });
 
 console.log(
   JSON.stringify({
     url: url || null,
-    source: url ? "built-from-ids" : "missing",
+    source: url ? (messageId ? "built-from-ids" : "channel-from-ids") : "missing",
     conversationId: conversationId || null,
     messageId: messageId || null,
   })

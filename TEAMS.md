@@ -193,7 +193,7 @@ MCP настраивается **у вас в Cursor**, не копируетс�
 | Нет карточки / не стартует     | Шаги 2 и 6: Cloud Agents, Teams Connect, `@Cursor help`                    |
 | Просит открыть Web или Desktop | Писать в **треде канала**                                                  |
 | «AZURE_DEVOPS_PAT is missing»  | Шаги 3–4: **свой** PAT в Secrets, имя точно `AZURE_DEVOPS_PAT`             |
-| MCP не логинится / 401 / агент пишет «нет MCP» | Шаг 5: сервер `ado` **включён** в MCP dropdown, токен `${env:AZURE_DEVOPS_PAT}` |
+| MCP не логинится / 401 / HTML логина Azure / «placeholder» | Шаг 5: `ado` включён; Env `PERSONAL_ACCESS_TOKEN` = `${env:AZURE_DEVOPS_PAT}`. Пересохраните MCP. Агент не должен писать PAT в файлы |
 | Агент создаёт баг через REST, не через MCP | Шаг 5 не выполнен или MCP выключен у Cloud Agent — включите `ado` и перезапустите |
 | Баг 403                        | У вашей учётки ADO есть права на HubEx, scope Work Items Read & write      |
 | Анализ без кода                | Шаг 5 + у PAT scope **Code Read**                                          |

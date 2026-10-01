@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Azure DevOps Bug templates (HubEx)
 
-Создавай Bug через MCP `wit_create_work_item`, если инструменты MCP есть.
+Создавай Bug через MCP: `wit_work_item_write` `action=create` или `wit_create_work_item`. Имена: `ado/mcp-tools.json`.
 
 **Не создавай Bug через REST-скрипт**, пока доступен MCP. Скрипт `--attach-to` — вложения **и** ссылка на тред Teams. Запускай его после каждого create, даже без файлов.
 

@@ -34,6 +34,7 @@
 | `TEAMS.md` | Инструкция для сотрудников |
 | `.cursor/rules/`, `.cursor/skills/` | Команды, шаблоны багов, анализ |
 | `ado/bug-templates.json` | Поля Bug в HubEx |
+| `ado/mcp-tools.json` | Новые и старые имена ADO MCP |
 | `ado/code-repos.json` | Какие репозитории HubEx смотреть при анализе |
 | `scripts/create-hubex-bug.mjs` | Только вложения к уже созданному багу (не создание work item) |
 | `.env.example` | Имена переменных без значений. `.env` в git не входит |
