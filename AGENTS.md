@@ -12,9 +12,11 @@ Work item и код HubEx — **только MCP** `ado` / `user-ado`: `wit_crea
 
 Не используй HTTP `mcp.dev.azure.com`. Нужен stdio `@azure-devops/mcp` с PAT пользователя.
 
-**Не используй MCP HubEx** (`@hubex/mcp`, инструменты `hubex_*`), даже если сервер виден в прогоне. Это сырой инструмент. Воспроизведение на DEV — только `scripts/hubex-api.mjs` / Playwright.
+**Не используй MCP HubEx** (`@hubex/mcp`, инструменты `hubex_*`), даже если сервер виден в прогоне. Это сырой инструмент.
 
-Токен **нельзя** брать из git. ADO: секрет `AZURE_DEVOPS_PAT`. DEV HubEx: `.env` (локально) или Secrets с теми же именами. Не печатай значения.
+**Не воспроизводи кейс на DEV HubEx:** не вызывай `scripts/hubex-api.mjs`, Playwright, `scripts/repro_web.py`. Не ходи в живой DEV. Анализ и баг — только по коду через `ado` и по тексту треда.
+
+Токен **нельзя** брать из git. ADO: секрет `AZURE_DEVOPS_PAT`. Не печатай значения.
 
 `scripts/create-hubex-bug.mjs` — **только загрузка вложений**. **Запрещено** создавать Bug через REST, если MCP есть. Если MCP-инструментов нет — **не** создавай баг скриптом. Напиши, что нужно включить MCP на [cursor.com/agents](https://cursor.com/agents) → MCP.
 
@@ -78,16 +80,15 @@ Follow-up «поправь баг» — без `--attach-to`. Скрипт не 
 
 ### `@Cursor создай баг` / заведи баг
 
-1. Анализ по skill `analyze-hubex-issue` (MCP).
-2. Воспроизведение на DEV, tenant 5: код через `ado`, живые данные — `scripts/hubex-api.mjs` / Playwright. Креды из Secrets, не светить. Не вызывай MCP HubEx.
-3. Bug через MCP.
-4. Анализ и результат воспроизведения — `wit_add_work_item_comment`.
-5. Вложения один раз.
-6. Ответ: `Сделал анализ и завел Bug на Backend/Frontend/МП: {url}`
+1. Анализ по skill `analyze-hubex-issue` (MCP `ado`).
+2. Bug через MCP.
+3. Анализ — `wit_add_work_item_comment`.
+4. Вложения один раз.
+5. Ответ: `Сделал анализ и завел Bug на Backend/Frontend/МП: {url}`
 
 ### `@Cursor сделай анализ`
 
-Только разбор. **Полный текст анализа в ответе.** Баг не создавать. DEV/Playwright не обязательны.
+Только разбор. **Полный текст анализа в ответе.** Баг не создавать.
 
 ### Follow-up правки бага
 

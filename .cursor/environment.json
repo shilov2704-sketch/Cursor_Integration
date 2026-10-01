@@ -1,5 +1,4 @@
 {
   "name": "HubEx Teams",
-  "install": "node -v && npm install -g @azure-devops/mcp && python3 -m pip install --user playwright && python3 -m playwright install chromium && test -f scripts/create-hubex-bug.mjs && test -f scripts/hubex-api.mjs",
-  "start": "node scripts/sync-dev-env.mjs"
+  "install": "node -v && npm install -g @azure-devops/mcp && test -f scripts/create-hubex-bug.mjs"
 }

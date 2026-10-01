@@ -10,7 +10,7 @@
 
 | Команда | Результат |
 |---|---|
-| `@Cursor создай баг` | Анализ, воспроизведение DEV, Bug (Frontend / Backend / МП) |
+| `@Cursor создай баг` | Анализ кода, Bug (Frontend / Backend / МП) |
 | `@Cursor сделай анализ` | Полный разбор по коду в ответе. Баг не создаётся |
 
 ## Как подключиться
@@ -36,8 +36,6 @@
 | `ado/bug-templates.json` | Поля Bug в HubEx |
 | `ado/code-repos.json` | Какие репозитории HubEx смотреть при анализе |
 | `scripts/create-hubex-bug.mjs` | Только вложения к уже созданному багу (не создание work item) |
-| `scripts/hubex-api.mjs` | Вызов DEV API (токены не печатает) |
-| `scripts/repro_web.py` | Playwright, DEV frontend |
 | `.env.example` | Имена переменных без значений. `.env` в git не входит |
 | `.cursor/mcp.json.example` | Пример MCP **без** токена |
 
