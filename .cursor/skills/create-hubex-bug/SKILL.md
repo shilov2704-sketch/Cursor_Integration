@@ -11,6 +11,8 @@ description: Создать Bug в Azure DevOps HubEx. Использовать 
 
 Не проси открыть Web/Desktop. Кроме вопроса про найденный дубль других уточнений не задавай.
 
+**Сразу после чтения этого skill — только §1 (дубли).** Не вызывай `search_code` / `analyze-hubex-issue` / create, пока нет результата `search_workitem`. Не пиши в Teams «завел Bug», пока не выполнен `--attach-to`.
+
 Если пользователь просит **только** «сделай анализ» / проанализируй **без** «создай/заведи баг» — этот skill **не** использовать: только `analyze-hubex-issue`, полный разбор **в ответе**, work item не создавать.
 
 ## 0. MCP обязателен для work item и кода
@@ -25,7 +27,7 @@ description: Создать Bug в Azure DevOps HubEx. Использовать 
 
 Не пиши `call.py` / JSON-RPC к stdio MCP. Не сохраняй PAT в файл. Нет tools — не создавай баг через REST.
 
-Первый вызов: `wit_work_item` `get_type` или `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`). Если ответ HTML логина — MCP без PAT, остановись.
+Первый вызов при «создай баг»: `search_workitem` (`searchText` из треда, `project=["HubEx"]`, `workItemType=["Bug"]`). Не `get_type` и не `search_code`. Если ответ HTML логина — MCP без PAT, остановись. `get_type` — только после дублей, перед анализом кода.
 
 ## 1. Дубли (до анализа и create)
 
@@ -93,7 +95,7 @@ node scripts/extract-teams-thread.mjs --text-file tmp/teams-context.txt
 <p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>
 ```
 
-`url: null` — `<p><b>Тред Teams:</b> <i>не указан</i></p>`. В Teams это не разворачивай длинным текстом.
+`url: null` в JSON — редкость. Не подставляй «не указан» заранее. Ссылка на канал Support (`source: channel-from-ids`) — валидный URL, её и вставляй.
 
 ## 4. Создать work item (MCP)
 
@@ -131,7 +133,7 @@ node scripts/extract-teams-thread.mjs --text-file tmp/teams-context.txt
 node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --discover --attach-dir tmp/bug-attachments --thread-url "{url}"
 ```
 
-Скрипт допишет «Тред Teams» в Repro Steps, повесит Hyperlink и пропустит уже прикреплённые файлы.
+Скрипт допишет «Тред Teams» в Repro Steps, повесит Hyperlink и пропустит уже прикреплённые файлы. **Без этой команды ответ в Teams с ссылкой на новый Bug запрещён.**
 
 Follow-up редактирования: `wit_update_work_item` / комментарий. **Не** запускай `--attach-to` и `--discover`, пока пользователь не прислал **новые** файлы (`--attach path`, без `--discover`). Если в баге нет ссылки на тред — тогда `--attach-to` с `--thread-url` без `--discover`.
 

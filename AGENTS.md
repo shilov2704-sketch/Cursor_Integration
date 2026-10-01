@@ -6,6 +6,17 @@
 - Код, имена файлов, идентификаторы, команды git, заголовки коммитов и PR — на английском.
 - Не переключайся на английский только потому, что интерфейс Teams или Cursor на английском.
 
+# СТОП при «создай баг» / «заведи баг»
+
+Пока не вызван MCP `search_workitem` — **запрещено**: `search_code`, `repo_file`, `wit_work_item_write` `create`, анализ кода, ответ «завел Bug».
+
+1. `search_workitem` (`project=["HubEx"]`, `workItemType=["Bug"]`, ключевые слова из треда). Карта: `ado/duplicate-query.json`. Не Active Bugs целиком.
+2. Совпадение по кейсу → ссылка на баг, ждать. Create нет.
+3. Нет совпадения → анализ → create → **сразу** `node scripts/extract-teams-thread.mjs` и `node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --discover --attach-dir tmp/bug-attachments --thread-url "{url}"`.
+4. Ответ в Teams только после `--attach-to`. Писать «Тред Teams: не указан» **нельзя**, пока extract не запущен: у скрипта почти всегда есть URL канала Support.
+
+Не открывай skill `analyze-hubex-issue` раньше пункта 3. Не клонируй репозитории HubEx и не обходи MCP своим клиентом.
+
 # Azure DevOps MCP — обязательно для багов и кода
 
 Work item и код HubEx — **только инструменты MCP** `ado` / `user-ado` из этого прогона. Не пиши Python/Node JSON-RPC к `@azure-devops/mcp`, не клади PAT в файлы (`/tmp/ado-mcp`, `basic.env`). Не вызывай `mcp_auth` для PAT stdio.
@@ -30,9 +41,12 @@ Work item и код HubEx — **только инструменты MCP** `ado` 
 
 Если вызов вернул HTML логина Azure / «placeholder» — MCP не получил PAT. Напиши это пользователю. **Не** обходи через локальный spawn MCP и файл с токеном.
 
-Первая проверка (один вызов, не цикл):
-1. Тип Bug: `wit_work_item` `get_type` **или** `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`).
-2. Код: `search_code` (`project=HubEx`).
+Первая проверка при «создай баг» (один вызов, не цикл):
+1. **Дубли:** `search_workitem` (`project=["HubEx"]`, `workItemType=["Bug"]`). Без этого шага дальше не идти.
+2. Если дублей нет — тип Bug: `wit_work_item` `get_type` **или** `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`).
+3. Код: `search_code` (`project=HubEx`).
+
+Только «сделай анализ» без create — шаг 1 (дубли) не обязателен; начни с `get_type` / `search_code`.
 
 Нет ни новых, ни старых tools — остановись, баг не создавай.
 
@@ -64,7 +78,7 @@ Iteration: `HubEx\\Next-Backlog`. Не ставь Area `AdminApp` и други�
 2. `node scripts/extract-teams-thread.mjs --text-file tmp/teams-context.txt` — возьми `url` из JSON.
 3. В HTML после «Страница/форма»: `<p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>`. `format: Html`.
 4. Сразу после create, **даже если файлов нет**, выполни `--attach-to` с `--thread-url`. Скрипт допишет ссылку в описание, если MCP её пропустил.
-5. Не выдумывай GUID. `url: null` в JSON — тогда `не указан`.
+5. Не выдумывай GUID. Не пиши «не указан», не запустив extract. URL канала из `channel-from-ids` — нормальная ссылка.
 
 ## Вложения и ссылка на тред
 

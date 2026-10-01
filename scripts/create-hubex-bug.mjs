@@ -93,13 +93,29 @@ function resolveThreadUrl(explicit) {
     .split("\n")
     .filter(Boolean)
     .pop();
-  if (!line) return "";
+  if (line) {
+    try {
+      const parsed = JSON.parse(line);
+      if (parsed.url) return parsed.url;
+    } catch {
+      // fall through to channel defaults
+    }
+  }
   try {
-    const parsed = JSON.parse(line);
-    return parsed.url || "";
+    const channel = JSON.parse(
+      fs.readFileSync(path.join(root, "ado", "teams-channel.json"), "utf8")
+    );
+    if (channel.conversationId) {
+      const params = new URLSearchParams();
+      if (channel.groupId) params.set("groupId", channel.groupId);
+      if (channel.tenantId) params.set("tenantId", channel.tenantId);
+      const name = channel.channelName || "Support";
+      return `https://teams.microsoft.com/l/channel/${channel.conversationId}/${encodeURIComponent(name)}?${params.toString()}`;
+    }
   } catch {
     return "";
   }
+  return "";
 }
 
 function threadMarkup(url) {

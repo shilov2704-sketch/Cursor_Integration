@@ -5,6 +5,8 @@ description: Разобрать дефект HubEx по коду в Azure DevOps
 
 # Анализ проблемы HubEx
 
+Если в сообщении есть «создай баг» / «заведи баг» — **остановись.** Сначала skill `create-hubex-bug` §1: MCP `search_workitem`. Этот skill и `search_code` — только если дублей нет или пользователь отверг найденные баги.
+
 Код продукта **не** в этом репозитории. Код только через MCP `ado`. Карта: `ado/code-repos.json`. Имена tools: `ado/mcp-tools.json` (новые `repo_file` / `search_code` или старые `repo_get_file_content`). **Не вызывай MCP HubEx.** Не пиши свой клиент к MCP и не клади PAT в файлы.
 
 Если инструментов MCP ADO **нет в этом прогоне** — остановись. Напиши, что нужен stdio MCP `ado` на [cursor.com/agents](https://cursor.com/agents) → MCP. **Не выдумывай код.** Не ходи в живой DEV HubEx.
