@@ -44,17 +44,23 @@ Iteration: `HubEx\\Next-Backlog`. Не ставь Area `AdminApp` и други�
 
 ## Ссылка на тред
 
-После «Страница/форма», перед «Действия». URL: `node scripts/extract-teams-thread.mjs --text "..."`. Не выдумывать. Нет ссылки — `не указан`.
+Строка **Тред Teams** в Repro Steps обязательна. Без неё прогон не заканчивай.
 
-## Вложения
+1. Запиши полный текст пользовательского сообщения и контекст треда в `tmp/teams-context.txt`.
+2. `node scripts/extract-teams-thread.mjs --text-file tmp/teams-context.txt` — возьми `url` из JSON.
+3. В HTML после «Страница/форма»: `<p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>`. `format: Html`.
+4. Сразу после create, **даже если файлов нет**, выполни `--attach-to` с `--thread-url`. Скрипт допишет ссылку в описание, если MCP её пропустил.
+5. Не выдумывай GUID. `url: null` в JSON — тогда `не указан`.
 
-Только при **первом** создании:
+## Вложения и ссылка на тред
+
+После **каждого** create, даже без файлов:
 
 ```bash
 node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --discover --attach-dir tmp/bug-attachments --thread-url "{url}"
 ```
 
-Follow-up «поправь баг» — без `--attach-to`. Скрипт не прикрепляет файл, который уже есть на work item.
+Follow-up «поправь баг» — без `--attach-to`, если нет новых файлов и ссылка уже в баге.
 
 ## Repro Steps
 
@@ -81,9 +87,9 @@ Follow-up «поправь баг» — без `--attach-to`. Скрипт не 
 ### `@Cursor создай баг` / заведи баг
 
 1. Анализ по skill `analyze-hubex-issue` (MCP `ado`).
-2. Bug через MCP.
+2. Bug через MCP (в Repro Steps обязательна строка **Тред Teams** со ссылкой).
 3. Анализ — `wit_add_work_item_comment`.
-4. Вложения один раз.
+4. `create-hubex-bug.mjs --attach-to` **всегда**, даже без файлов: дописывает ссылку на тред.
 5. Ответ: `Сделал анализ и завел Bug на Backend/Frontend/МП: {url}`
 
 ### `@Cursor сделай анализ`

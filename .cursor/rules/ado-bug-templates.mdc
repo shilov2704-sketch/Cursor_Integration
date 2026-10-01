@@ -7,7 +7,7 @@ alwaysApply: true
 
 Создавай Bug через MCP `wit_create_work_item`, если инструменты MCP есть.
 
-**Не создавай Bug через REST-скрипт**, пока доступен MCP. Скрипт — только `--attach-to` для файлов.
+**Не создавай Bug через REST-скрипт**, пока доступен MCP. Скрипт `--attach-to` — вложения **и** ссылка на тред Teams. Запускай его после каждого create, даже без файлов.
 
 - Organization: `melston`
 - Project: `HubEx`
@@ -17,7 +17,7 @@ alwaysApply: true
 - При **только** «сделай анализ» — полный разбор в ответе, Bug не создавать.
 - Платформа после анализа: МП/android/ios/RN → mobile; API/ручка/сид/500/неверные данные сервера → backend; только UI/вёрстка → web. Скрин веба сам по себе не значит web.
 - Area Path только из таблицы. Не используй `HubEx\\Frontend\\AdminApp`.
-- После создания: ID и короткий ответ в Teams.
+- После создания: сразу `--attach-to` (ссылка на тред + вложения), затем ID и короткий ответ в Teams.
 
 ## Выбор шаблона
 
@@ -37,7 +37,7 @@ alwaysApply: true
 
 ## Ссылка на тред Teams
 
-После «Страница/форма», перед «Действия». Скрипт: `node scripts/extract-teams-thread.mjs --text "..."`. Передай `--thread-url` при attach.
+После «Страница/форма», перед «Действия». Сначала `extract-teams-thread.mjs --text-file tmp/teams-context.txt`. После create всегда `--attach-to` с `--thread-url`, даже без файлов.
 
 ## Вложения
 

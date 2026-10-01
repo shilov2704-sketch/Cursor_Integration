@@ -7,7 +7,7 @@ description: Создать Bug в Azure DevOps HubEx. Использовать 
 
 Синонимы: создай баг / заведи баг / заведи дефект / create bug.
 
-**Порядок в одном прогоне:** анализ кода (MCP `ado`) → создать Bug (MCP) → комментарий с анализом → вложения один раз → короткий ответ в Teams. **Не воспроизводи** кейс на DEV HubEx.
+**Порядок в одном прогоне:** анализ кода (MCP `ado`) → extract URL треда Teams → создать Bug (MCP, в Repro Steps кликабельная ссылка) → `--attach-to` **всегда** (допишет ссылку, если MCP её съел) → комментарий с анализом → короткий ответ в Teams. **Не воспроизводи** кейс на DEV HubEx. Прогон без строки «Тред Teams» в баге не заканчивай.
 
 Не проси открыть Web/Desktop. Не задавай вопросов, без которых баг не появится.
 
@@ -40,21 +40,33 @@ description: Создать Bug в Azure DevOps HubEx. Использовать 
 
 Не вызывай MCP HubEx, `scripts/hubex-api.mjs`, Playwright.
 
-## 2. Ссылка на тред Teams
+## 2. Ссылка на тред Teams (обязательно)
 
-В Repro Steps — **после «Страница/форма» и перед «Действия»**:
+Не пропускай этот шаг, даже если в промпте нет `https://teams.microsoft.com/...`.
+
+1. Сохрани полный текст сообщения пользователя и контекст треда:
+
+```bash
+mkdir -p tmp
+```
+
+Файл: `tmp/teams-context.txt` (весь промпт, не вырезай).
+
+2. Извлеки URL:
+
+```bash
+node scripts/extract-teams-thread.mjs --text-file tmp/teams-context.txt
+```
+
+Из JSON возьми поле `url`. Если оно не `null` — это и есть ссылка. Не выдумывай GUID.
+
+3. В Repro Steps после «Страница/форма» и перед «Действия», `format: Html`:
 
 ```html
 <p><b>Тред Teams:</b> <a href="{url}">{url}</a></p>
 ```
 
-Достань URL:
-
-```bash
-node scripts/extract-teams-thread.mjs --text "сюда целиком сообщение пользователя и контекст треда"
-```
-
-Либо готовая `https://teams.microsoft.com/...` из промпта. Не выдумывай GUID. Нет URL — `не указан`, в комментарии к багу попроси Copy link; в Teams это не разворачивай длинным текстом.
+`url: null` — `<p><b>Тред Teams:</b> <i>не указан</i></p>`. В Teams это не разворачивай длинным текстом.
 
 ## 3. Создать work item (MCP)
 
@@ -84,17 +96,17 @@ node scripts/extract-teams-thread.mjs --text "сюда целиком сообщ
 
 `wit_add_work_item_comment`, `format: Markdown`, `project: HubEx`. Кратко: платформа, репозитории, цепочка UI→API, причина с путями, что проверить. Это не дублировать в ответе Teams.
 
-## 5. Вложения — один раз при создании
+## 5. Ссылка на тред и вложения — всегда после create
 
-Только после **первого** create, не на follow-up «поправь баг»:
+Даже если файлов нет, сразу:
 
 ```bash
 node scripts/create-hubex-bug.mjs --attach-to {id} --unassign --discover --attach-dir tmp/bug-attachments --thread-url "{url}"
 ```
 
-Скрипт сам пропускает уже прикреплённые файлы и повторный Hyperlink.
+Скрипт допишет «Тред Teams» в Repro Steps, повесит Hyperlink и пропустит уже прикреплённые файлы.
 
-Follow-up редактирования: `wit_update_work_item` / комментарий. **Не** запускай `--attach-to` и `--discover`, пока пользователь не прислал **новые** файлы (`--attach path`, без `--discover`).
+Follow-up редактирования: `wit_update_work_item` / комментарий. **Не** запускай `--attach-to` и `--discover`, пока пользователь не прислал **новые** файлы (`--attach path`, без `--discover`). Если в баге нет ссылки на тред — тогда `--attach-to` с `--thread-url` без `--discover`.
 
 ## 6. Ответ в Teams (коротко)
 

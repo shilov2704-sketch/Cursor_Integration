@@ -11,6 +11,7 @@
  *
  * On edit, skip --discover. Existing filenames are not attached again unless --force-attach.
  */
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -77,6 +78,28 @@ function escapeHtml(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function resolveThreadUrl(explicit) {
+  const given = String(explicit || "").trim();
+  if (/^https:\/\/teams\.microsoft\.com\//i.test(given)) return given;
+  const extract = path.join(root, "scripts", "extract-teams-thread.mjs");
+  const result = spawnSync(process.execPath, [extract], {
+    encoding: "utf8",
+    timeout: 12000,
+  });
+  const line = String(result.stdout || "")
+    .trim()
+    .split("\n")
+    .filter(Boolean)
+    .pop();
+  if (!line) return "";
+  try {
+    const parsed = JSON.parse(line);
+    return parsed.url || "";
+  } catch {
+    return "";
+  }
 }
 
 function threadMarkup(url) {
@@ -392,7 +415,9 @@ if (process.argv.includes("--list-discovered")) {
 
 const pat = resolvePat(process.env.AZURE_DEVOPS_PAT || process.env.PERSONAL_ACCESS_TOKEN);
 const attachTo = arg("attach-to");
-const threadUrl = arg("thread-url") || arg("thread") || process.env.TEAMS_THREAD_URL || "";
+const threadUrl = resolveThreadUrl(
+  arg("thread-url") || arg("thread") || process.env.TEAMS_THREAD_URL || ""
+);
 const forceAttach = process.argv.includes("--force-attach");
 let attachments = collectAttachments();
 
