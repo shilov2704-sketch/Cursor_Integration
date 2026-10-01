@@ -23,7 +23,7 @@
 2. Default repository: `shilov2704-sketch/Cursor_Integration`.
 3. Свой PAT Azure DevOps (org `melston`: Work Items Read & write, Code Read).
 4. Секрет Cloud Agents с именем `AZURE_DEVOPS_PAT`.
-5. MCP на [cursor.com/agents](https://cursor.com/agents) → MCP: `ado` и `hubex` (stdio, не HTTP).
+5. MCP на [cursor.com/agents](https://cursor.com/agents) → MCP: только `ado` (stdio, не HTTP). HubEx MCP не подключать.
 6. Приложение Cursor в Teams, затем в треде канала `@Cursor создай баг` или `@Cursor сделай анализ`.
 
 ## Что в репозитории

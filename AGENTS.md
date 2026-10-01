@@ -12,19 +12,17 @@ Work item и код HubEx — **только MCP** `ado` / `user-ado`: `wit_crea
 
 Не используй HTTP `mcp.dev.azure.com`. Нужен stdio `@azure-devops/mcp` с PAT пользователя.
 
-# HubEx MCP — живые данные DEV
-
-Порядок всегда такой: **сначала код** в репозиториях HubEx через MCP `ado` (`search_code`, `repo_get_file_content`). MCP `hubex` (`@hubex/mcp`) — **дополнение** для живых данных DEV и воспроизведения (RW). Карточки Bug — только `ado`.
-
-Не печатай `HUBEX_SERVICE_TOKEN` / `API_USER_TOKEN`. При воспроизведении можно создавать тестовые сущности через `hubex` (пакет помечает их `[MCP-TEST]`). Не трогай чужие боевые записи и не делай DELETE без явной просьбы.
-
-Если `hubex` нет — анализ кода не останавливай; воспроизведение через `scripts/hubex-api.mjs` / Playwright.
+**Не используй MCP HubEx** (`@hubex/mcp`, инструменты `hubex_*`), даже если сервер виден в прогоне. Это сырой инструмент. Воспроизведение на DEV — только `scripts/hubex-api.mjs` / Playwright.
 
 Токен **нельзя** брать из git. ADO: секрет `AZURE_DEVOPS_PAT`. DEV HubEx: `.env` (локально) или Secrets с теми же именами. Не печатай значения.
 
 `scripts/create-hubex-bug.mjs` — **только загрузка вложений**. **Запрещено** создавать Bug через REST, если MCP есть. Если MCP-инструментов нет — **не** создавай баг скриптом. Напиши, что нужно включить MCP на [cursor.com/agents](https://cursor.com/agents) → MCP.
 
-Первая проверка прогона: `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`).
+Первая проверка прогона:
+1. `wit_get_work_item_type` (`project=HubEx`, `workItemType=Bug`) — доступ к work item.
+2. `search_code` (`project=HubEx`) — доступ к коду репозиториев.
+
+Нет этих инструментов — остановись, баг не создавай.
 
 # Баги HubEx
 
@@ -81,7 +79,7 @@ Follow-up «поправь баг» — без `--attach-to`. Скрипт не 
 ### `@Cursor создай баг` / заведи баг
 
 1. Анализ по skill `analyze-hubex-issue` (MCP).
-2. Воспроизведение на DEV, tenant 5: сначала код, затем MCP `hubex` (RW); запасной путь — `scripts/hubex-api.mjs` / Playwright. Креды из Secrets, не светить.
+2. Воспроизведение на DEV, tenant 5: код через `ado`, живые данные — `scripts/hubex-api.mjs` / Playwright. Креды из Secrets, не светить. Не вызывай MCP HubEx.
 3. Bug через MCP.
 4. Анализ и результат воспроизведения — `wit_add_work_item_comment`.
 5. Вложения один раз.

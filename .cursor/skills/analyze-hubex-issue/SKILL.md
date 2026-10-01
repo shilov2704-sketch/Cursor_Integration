@@ -5,9 +5,9 @@ description: Разобрать дефект HubEx по коду в Azure DevOps
 
 # Анализ проблемы HubEx
 
-Код продукта **не** в этом репозитории. **Сначала** код через MCP `ado` / `user-ado`: `search_code`, `repo_get_file_content`, `repo_list_directory`. Карта: `ado/code-repos.json`. MCP `hubex` — после кода, чтобы сверить живые данные; при «только анализ» данные не меняй.
+Код продукта **не** в этом репозитории. Код только через MCP `ado` / `user-ado`: `search_code`, `repo_get_file_content`, `repo_list_directory`. Карта: `ado/code-repos.json`. **Не вызывай MCP HubEx** (`hubex_*`).
 
-Если инструментов MCP ADO **нет в этом прогоне** — остановись. Напиши, что нужен stdio MCP `ado` на [cursor.com/agents](https://cursor.com/agents) → MCP. **Не выдумывай код.** Если нет только `hubex` — код всё равно ищи через `ado`; живые данные тогда через `scripts/hubex-api.mjs`.
+Если инструментов MCP ADO **нет в этом прогоне** — остановись. Напиши, что нужен stdio MCP `ado` на [cursor.com/agents](https://cursor.com/agents) → MCP. **Не выдумывай код.** Живые данные DEV — `scripts/hubex-api.mjs`, не MCP HubEx.
 
 ## Как читать тред (не перепутать кейс)
 
@@ -28,7 +28,7 @@ description: Разобрать дефект HubEx по коду в Azure DevOps
    - только вёрстка, тултип, CSS, обрезка сайдбаром → `web`
    - МП / android / ios / worker app / RN → `mobile`
    - админка без отдельного шаблона → всё равно шаблон `web` (Area `HubEx\Frontend\WebApp`), не выдумывай `AdminApp` как Area Path
-5. Пока не посмотрел и фронт, и связанный API — **не выбирай** `web` «по умолчанию». После кода, если есть MCP `hubex` — сверь сущность на DEV.
+5. Пока не посмотрел и фронт, и связанный API — **не выбирай** `web` «по умолчанию».
 
 Склад / WH / оприходование / Receipt → `HubEx.Service.WH.Api`. Объекты / родитель / дочерний / аватар → `HubEx.Service.ES.Api` + MainApp.
 

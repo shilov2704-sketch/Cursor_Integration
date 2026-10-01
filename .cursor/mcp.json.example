@@ -7,19 +7,6 @@
       "env": {
         "PERSONAL_ACCESS_TOKEN": "${env:AZURE_DEVOPS_PAT}"
       }
-    },
-    "hubex": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@hubex/mcp"],
-      "env": {
-        "HUBEX_ENV": "dev",
-        "HUBEX_APPLICATION_ID": "${env:APP_ID}",
-        "HUBEX_TENANT_ID": "${env:TENANT_ID}",
-        "HUBEX_AUTH_MODE": "service",
-        "HUBEX_SERVICE_TOKEN": "${env:API_USER_TOKEN}",
-        "HUBEX_READONLY": "false"
-      }
     }
   }
 }

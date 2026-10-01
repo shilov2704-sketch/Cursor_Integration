@@ -43,9 +43,8 @@ description: Создать Bug в Azure DevOps HubEx. Использовать 
 Skill `reproduce-hubex-dev`. Креды только из `.env` / Secrets, **не печатать**.
 
 - Сначала вывод анализа по **коду** (репозитории HubEx через `ado`)
-- Затем MCP `hubex` (RW): воспроизвести кейс на DEV, при необходимости создать `[MCP-TEST]` данные
-- Нет `hubex` → Backend `node scripts/hubex-api.mjs GET /ручка`; Frontend `python scripts/repro_web.py /путь`
-- МП — `hubex` / API по тем же сущностям
+- Затем DEV: Backend `node scripts/hubex-api.mjs GET /ручка`; Frontend `python scripts/repro_web.py /путь`
+- МП — API по тем же сущностям. **Не вызывай MCP HubEx.**
 
 Результат (воспроизвелось / нет / нет кредов) — в комментарий к багу, без токенов. Нет `.env` — баг всё равно создай.
 
